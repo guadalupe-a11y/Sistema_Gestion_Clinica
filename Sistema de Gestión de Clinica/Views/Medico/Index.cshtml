@@ -1,6 +1,67 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Cita>
+
+@{
+    ViewData["Title"] = "Panel del Médico";
 }
+
+<div class="container mt-4">
+    <h2 class="mb-4">📋 Pacientes Agendados para Hoy</h2>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Turno</th>
+                        <th>Paciente</th>
+                        <th>Hora</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cita in Model)
+                    {
+                        <tr>
+                            <td><strong>@cita.CodigoTurno</strong></td>
+                            <td>@cita.Paciente?.Nombre @cita.Paciente?.Apellido</td>
+                            <td>@cita.FechaHora.ToString("hh:mm tt")</td>
+                            <td>@cita.MotivoConsulta</td>
+                            <td>
+                                <span class="badge @(cita.EstadoCita?.NombreEstado switch {
+                                    "Agendada" => "bg-primary",
+                                    "En Espera" => "bg-warning text-dark",
+                                    "En Consulta" => "bg-info text-dark",
+                                    "Finalizada" => "bg-success",
+                                    "Cancelada" => "bg-danger",
+                                    _ => "bg-secondary"
+                                })">
+                                    @cita.EstadoCita?.NombreEstado
+                                </span>
+                            </td>
+                            <td>
+                                @if (cita.EstadoCita?.NombreEstado == "En Espera" || cita.EstadoCita?.NombreEstado == "Agendada")
+                                {
+                                    <form asp-action="LlamarSiguiente" method="post" class="d-inline">
+                                        <input type="hidden" name="idCita" value="@cita.IdCita" />
+                                        <button type="submit" class="btn btn-sm btn-primary">🔔 Llamar</button>
+                                    </form>
+                                }
+                                else if (cita.EstadoCita?.NombreEstado == "En Consulta")
+                                {
+                                    <a asp-action="Atender" asp-route-idCita="@cita.IdCita" class="btn btn-sm btn-success">🩺 Continuar Consulta</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
