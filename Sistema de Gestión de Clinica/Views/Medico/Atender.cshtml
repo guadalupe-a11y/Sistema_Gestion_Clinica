@@ -1,0 +1,71 @@
+﻿@model Sistema_Gestión_Clinica.Models.Cita
+
+@{
+    ViewData["Title"] = "Atender Consulta";
+    var expediente = ViewBag.Expediente as Sistema_Gestión_Clinica.Models.Expediente;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Tarjeta de Información del Paciente y Expediente -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">👤 Paciente</h5>
+                </div>
+                <div class="card-body">
+                    <h4>@Model.Paciente?.Nombre @Model.Paciente?.Apellido</h4>
+                    <p class="mb-1"><strong>DUI:</strong> @Model.Paciente?.DUI</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> @Model.Paciente?.Telefono</p>
+                    <p class="mb-1"><strong>Turno:</strong> <span class="badge bg-secondary">@Model.CodigoTurno</span></p>
+                    <p class="mb-0"><strong>Motivo de Consulta:</strong> @Model.MotivoConsulta</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">📂 Expediente Médico</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Grupo Sanguíneo:</strong> @(expediente?.GrupoSanguineo ?? "No registrado")</p>
+                    <p class="mb-1"><strong>Alergias:</strong> @(expediente?.Alergias ?? "Ninguna")</p>
+                    <p class="mb-0"><strong>Antecedentes:</strong> @(expediente?.Antecedentes ?? "Sin antecedentes")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Registro de Atención -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">🩺 Registro de Consulta</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="FinalizarConsulta" method="post">
+                        <input type="hidden" name="idCita" value="@Model.IdCita" />
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Notas de la Consulta / Sintomatología</label>
+                            <textarea name="notas" class="form-control" rows="3" placeholder="Detalle los síntomas o notas relevantes del examen físico..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Diagnóstico</label>
+                            <textarea name="diagnostico" class="form-control" rows="3" required placeholder="Diagnóstico presuntivo o definitivo..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Indicaciones / Receta Médica</label>
+                            <textarea name="indicaciones" class="form-control" rows="3" placeholder="Tratamiento, medicamentos o indicaciones para el paciente..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" asp-route-idMedico="@Model.IdMedico" class="btn btn-outline-secondary">Regresar al Panel</a>
+                            <button type="submit" class="btn btn-success">✅ Finalizar Consulta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

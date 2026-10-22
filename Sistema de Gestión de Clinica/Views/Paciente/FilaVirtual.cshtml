@@ -1,6 +1,38 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model Sistema_Gestión_Clinica.ViewModels.FilaVirtualViewModel
+
+@{
+    ViewData["Title"] = "Fila Virtual";
 }
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">📱 Fila Virtual en Tiempo Real</h4>
+                </div>
+                <div class="card-body p-4">
+                    <h6 class="text-muted mb-3">Atención con: <strong>@Model.NombreMedico</strong></h6>
+
+                    <div class="my-4">
+                        <span class="display-1 fw-bold text-primary">@Model.PacientesAdelante</span>
+                        <p class="text-secondary fs-5">pacientes delante de ti</p>
+                    </div>
+
+                    <div class="alert alert-info py-3 mb-4">
+                        <h5 class="alert-heading mb-1">⏱️ Tiempo Estimado de Espera</h5>
+                        <span class="fs-3 fw-bold">~ @Model.TiempoEstimadoMinutos min</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                        <span class="text-muted">Estado actual del turno:</span>
+                        <span class="badge bg-success fs-6">@Model.EstadoActual</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-light py-3">
+                    <small class="text-muted">Esta pantalla se actualiza con el flujo de llamadas de la clínica.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
