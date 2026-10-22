@@ -1,6 +1,75 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Cita>
+
+@{
+    ViewData["Title"] = "Mis Citas Médicas";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📅 Mis Citas Médicas</h2>
+        <a asp-action="Agendar" class="btn btn-primary">➕ Agendar Nueva Cita</a>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Turno</th>
+                        <th>Médico</th>
+                        <th>Fecha y Hora</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cita in Model)
+                    {
+                        <tr>
+                            <td><strong>@cita.CodigoTurno</strong></td>
+                            <td>Dr/a. @cita.Medico?.Nombre @cita.Medico?.Apellido</td>
+                            <td>@cita.FechaHora.ToString("dd/MM/yyyy hh:mm tt")</td>
+                            <td>@cita.MotivoConsulta</td>
+                            <td>
+                                <span class="badge @(cita.EstadoCita?.NombreEstado switch
+                                      {
+                                          "Agendada" => "bg-primary",
+                                          "En Espera" => "bg-warning text-dark",
+                                          "En Consulta" => "bg-info text-dark",
+                                          "Finalizada" => "bg-success",
+                                          "Cancelada" => "bg-danger",
+                                          _ => "bg-secondary"
+                                      })">
+                                    @cita.EstadoCita?.NombreEstado
+                                </span>
+                            </td>
+                            <td>
+                                @if (cita.EstadoCita?.NombreEstado == "En Espera" || cita.EstadoCita?.NombreEstado == "En Consulta")
+                                {
+                                    <a asp-action="FilaVirtual" asp-route-id="@cita.IdCita" class="btn btn-sm btn-info text-white">📱 Fila Virtual</a>
+                                }
+
+                                @if (cita.EstadoCita?.NombreEstado == "Agendada")
+                                {
+                                    <form asp-action="CancelarCita" method="post" class="d-inline" onsubmit="return confirm('¿Está seguro de cancelar esta cita?');">
+                                        <input type="hidden" name="idCita" value="@cita.IdCita" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">❌ Cancelar</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

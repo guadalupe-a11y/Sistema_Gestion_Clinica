@@ -1,0 +1,84 @@
+﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Cita>
+
+@{
+    ViewData["Title"] = "Dashboard Administrador";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">📊 Dashboard General de la Clínica</h2>
+
+    <!-- Tarjetas Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Citas Totales Hoy</h6>
+                    <h2 class="fw-bold">@ViewBag.TotalCitasHoy</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Atendidas</h6>
+                    <h2 class="fw-bold">@ViewBag.CitasAtendidas</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-dark bg-warning shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">En Espera</h6>
+                    <h2 class="fw-bold">@ViewBag.CitasEnEspera</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Canceladas</h6>
+                    <h2 class="fw-bold">@ViewBag.CitasCanceladas</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla del Estado Global de Citas del Día -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="card-title mb-0">📌 Monitoreo General de Citas del Día</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Turno</th>
+                        <th>Fecha/Hora</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cita in Model)
+                    {
+                        <tr>
+                            <td><strong>@cita.CodigoTurno</strong></td>
+                            <td>@cita.FechaHora.ToString("dd/MM/yyyy hh:mm tt")</td>
+                            <td>
+                                <span class="badge @(cita.EstadoCita?.NombreEstado switch {
+                                    "Agendada" => "bg-primary",
+                                    "En Espera" => "bg-warning text-dark",
+                                    "En Consulta" => "bg-info text-dark",
+                                    "Finalizada" => "bg-success",
+                                    "Cancelada" => "bg-danger",
+                                    _ => "bg-secondary"
+                                })">
+                                    @cita.EstadoCita?.NombreEstado
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
