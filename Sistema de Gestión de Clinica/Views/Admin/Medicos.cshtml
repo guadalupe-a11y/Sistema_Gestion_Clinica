@@ -1,6 +1,40 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Medico>
+
+@{
+    ViewData["Title"] = "Gestión de Médicos";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👨‍⚕️ Plantilla Médica</h2>
+        <button class="btn btn-success" disabled>➕ Registrar Médico</button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Especialidad</th>
+                        <th>Consultorio</th>
+                        <th>Duración Consulta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var medico in Model)
+                    {
+                        <tr>
+                            <td>@medico.IdMedico</td>
+                            <td>Dr/a. @medico.Nombre @medico.Apellido</td>
+                            <td>@medico.Especialidad?.NombreEspecialidad</td>
+                            <td>@medico.Consultorio?.NombreConsultorio</td>
+                            <td>@medico.DuracionConsultaMin min</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

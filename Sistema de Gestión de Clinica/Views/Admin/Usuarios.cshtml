@@ -1,6 +1,40 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Usuario>
+
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👥 Gestión de Usuarios</h2>
+        <a asp-controller="Account" asp-action="Registro" class="btn btn-primary">➕ Nuevo Usuario</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Correo Electrónico</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usuario in Model)
+                    {
+                        <tr>
+                            <td>@usuario.IdUsuario</td>
+                            <td>@usuario.Correo</td>
+                            <td><span class="badge bg-info text-dark">@usuario.Rol?.NombreRol</span></td>
+                            <td>
+                                <span class="badge bg-success">Activo</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

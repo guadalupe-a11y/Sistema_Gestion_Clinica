@@ -1,6 +1,38 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.HorarioMedico>
+
+@{
+    ViewData["Title"] = "Gestión de Horarios";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>⏰ Horarios de Atención Médica</h2>
+        <button class="btn btn-primary" disabled>➕ Asignar Horario</button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Médico</th>
+                        <th>Día de la Semana</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var horario in Model)
+                    {
+                        <tr>
+                            <td>Dr/a. @horario.Medico?.Nombre @horario.Medico?.Apellido</td>
+                            <td>@horario.DiaSemana</td>
+                            <td>@horario.HoraInicio.ToString(@"hh\:mm")</td>
+                            <td>@horario.HoraFin.ToString(@"hh\:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
