@@ -18,23 +18,26 @@ namespace Sistema_Gestión_Clinica.Controllers
         public IActionResult Login() => View();
 
         [HttpPost]
-        public async Task<IActionResult> Login(string correo, string password)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
+            if (!ModelState.IsValid) return View(model);
+
             var usuario = await _context.Usuario
                 .Include(u => u.Rol)
-                .FirstOrDefaultAsync(u => u.Correo == correo && u.Activo);
+                .FirstOrDefaultAsync(u => u.Correo == model.Correo && u.Contrasena == model.Contrasena);
 
-            if (usuario == null || usuario.PasswordHash != password)
+            if (usuario == null)
             {
-                ViewBag.Error = "Correo o contraseña incorrectos.";
-                return View();
+                ModelState.AddModelError("", "Correo o contraseña incorrectos.");
+                return View(model);
             }
 
+            // Redirección por Rol
             return usuario.Rol?.NombreRol switch
             {
                 "Administrador" => RedirectToAction("Index", "Admin"),
-                "Recepcionista" => RedirectToAction("Index", "Recepcion"),
                 "Medico" => RedirectToAction("Index", "Medico"),
+                "Recepcion" => RedirectToAction("Index", "Recepcion"),
                 "Paciente" => RedirectToAction("Index", "Paciente"),
                 _ => RedirectToAction("Index", "Home")
             };
