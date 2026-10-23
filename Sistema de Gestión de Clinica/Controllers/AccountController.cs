@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
+using Sistema_Gestión_Clinica.ViewModels;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {

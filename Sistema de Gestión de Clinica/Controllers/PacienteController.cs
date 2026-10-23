@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Sistema_de_Gestión_de_Clinica.Services;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
 using Sistema_Gestión_Clinica.Services;
