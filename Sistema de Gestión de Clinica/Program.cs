@@ -9,7 +9,13 @@ builder.Services.AddControllersWithViews();
 
 // Configuración del DbContext con SQL Server
 builder.Services.AddDbContext<SistemaDeGestionDB>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+        }
+        ));
 
 // ----------------------------------------------------------------------
 // Registrar Servicios Personalizados para Inyección de Dependencias

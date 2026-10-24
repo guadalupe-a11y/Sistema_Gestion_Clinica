@@ -12,10 +12,12 @@ namespace Sistema_Gestión_Clinica.Models
         [Required, StringLength(100)]
         public string Correo { get; set; } = string.Empty;
 
+        // La propiedad en C# es Contrasena, pero apunta a la columna SQL "PasswordHash"
         [Required, StringLength(255)]
+        [Column("PasswordHash")]
         public string Contrasena { get; set; } = string.Empty;
 
-        // Propiedad auxiliar para compatibilidad con métodos Hash/Password
+        // Propiedad auxiliar para que compile DbInitializer y cualquier otra llamada
         [NotMapped]
         public string PasswordHash
         {
@@ -27,6 +29,7 @@ namespace Sistema_Gestión_Clinica.Models
 
         [ForeignKey("IdRol")]
         public virtual Rol? Rol { get; set; }
-        public bool Activo { get; internal set; }
+
+        public bool Activo { get; set; }
     }
 }

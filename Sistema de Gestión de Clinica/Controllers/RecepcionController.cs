@@ -16,13 +16,14 @@ namespace Sistema_Gestión_Clinica.Controllers
         // GET: Recepcion/Index
         public async Task<IActionResult> Index()
         {
-            var citas = await _context.Cita
+            List<Models.Cita> citas1 = await _context.Cita
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
                 .Include(c => c.EstadoCita)
                 .Where(c => c.FechaHora.Date == DateTime.Today)
                 .OrderBy(c => c.FechaHora)
                 .ToListAsync();
+            var citas = citas1;
 
             return View(citas);
         }

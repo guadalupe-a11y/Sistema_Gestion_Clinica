@@ -20,5 +20,23 @@ namespace Sistema_Gestión_Clinica.Data
         public DbSet<ListaEspera> ListaEspera { get; set; }
         public DbSet<RegistroAtencion> RegistroAtencion { get; set; }
         public DbSet<Expediente> Expediente { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Desactiva el borrado en cascada en Cita para evitar ciclos en SQL Server
+            modelBuilder.Entity<Cita>()
+                .HasOne(c => c.Paciente)
+                .WithMany()
+                .HasForeignKey(c => c.IdPaciente)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Cita>()
+                .HasOne(c => c.Medico)
+                .WithMany()
+                .HasForeignKey(c => c.IdMedico)
+                .OnDelete(DeleteBehavior.NoAction);
+        }
     }
 }
