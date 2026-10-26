@@ -1,53 +1,33 @@
 ﻿@model Sistema_Gestión_Clinica.ViewModels.AgendarCitaViewModel
-
 @{
-    ViewData["Title"] = "Agendar Cita";
-    var medicos = ViewBag.Medicos as IEnumerable<Sistema_Gestión_Clinica.Models.Medico>;
+    ViewData["Title"] = "Agendar cita";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0">🗓️ Agendar Cita Médica</h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Agendar" method="post">
-                        <div class="mb-3">
-                            <label class="form-label font-weight-bold">Médico y Especialidad</label>
-                            <select asp-for="IdMedico" class="form-select" required>
-                                <option value="">-- Seleccione un médico --</option>
-                                @if (medicos != null)
-                                {
-                                    @foreach (var med in medicos)
-                                    {
-                                        <option value="@med.IdMedico">Dr/a. @med.Nombre @med.Apellido - @med.Especialidad?.NombreEspecialidad</option>
-                                    }
-                                }
-                            </select>
-                            <span asp-validation-for="IdMedico" class="text-danger"></span>
-                        </div>
+<h2>Agendar cita</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
 
-                        <div class="mb-3">
-                            <label class="form-label font-weight-bold">Fecha y Hora</label>
-                            <input asp-for="FechaHora" type="datetime-local" class="form-control" required />
-                            <span asp-validation-for="FechaHora" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label font-weight-bold">Motivo de Consulta</label>
-                            <textarea asp-for="MotivoConsulta" class="form-control" rows="3" placeholder="Describa brevemente el motivo..." required></textarea>
-                            <span asp-validation-for="MotivoConsulta" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
-                            <button type="submit" class="btn btn-primary"> Confirmar Cita</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<form asp-action="Agendar" method="post">
+    <div class="mb-3">
+        <label asp-for="IdEspecialidad"></label>
+        <select asp-for="IdEspecialidad" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Especialidades, "IdEspecialidad", "NombreEspecialidad"))">
+            <option value="">-- Seleccione --</option>
+        </select>
     </div>
-</div>
+    <div class="mb-3">
+        <label asp-for="IdMedico"></label>
+        <select asp-for="IdMedico" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Medicos, "IdMedico", "Nombre"))">
+            <option value="">-- Seleccione --</option>
+        </select>
+    </div>
+    <div class="mb-3"><label asp-for="Fecha"></label><input asp-for="Fecha" type="date" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Hora"></label><input asp-for="Hora" type="time" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Motivo"></label><textarea asp-for="Motivo" class="form-control"></textarea></div>
+    <button class="btn btn-primary">Agendar</button>
+    <a asp-action="MisCitas" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

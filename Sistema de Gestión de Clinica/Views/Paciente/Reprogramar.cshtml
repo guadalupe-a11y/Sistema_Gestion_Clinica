@@ -1,6 +1,35 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model Sistema_Gestión_Clinica.ViewModels.AgendarCitaViewModel
+@{
+    ViewData["Title"] = "Reprogramar cita";
+}
+
+<h2>Reprogramar cita</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-action="Reprogramar" method="post">
+    <input type="hidden" asp-for="IdCita" />
+
+    <div class="mb-3">
+        <label asp-for="IdEspecialidad"></label>
+        <select asp-for="IdEspecialidad" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Especialidades, "IdEspecialidad", "NombreEspecialidad"))">
+            <option value="">-- Seleccione --</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="IdMedico"></label>
+        <select asp-for="IdMedico" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Medicos, "IdMedico", "Nombre"))">
+            <option value="">-- Seleccione --</option>
+        </select>
+    </div>
+    <div class="mb-3"><label asp-for="Fecha"></label><input asp-for="Fecha" type="date" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Hora"></label><input asp-for="Hora" type="time" class="form-control" /></div>
+    <div class="mb-3"><label asp-for="Motivo"></label><textarea asp-for="Motivo" class="form-control"></textarea></div>
+    <button class="btn btn-primary">Guardar cambios</button>
+    <a asp-action="MisCitas" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }
