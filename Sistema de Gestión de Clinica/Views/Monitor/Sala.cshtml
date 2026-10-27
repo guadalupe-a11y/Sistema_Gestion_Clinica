@@ -1,6 +1,164 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@{
+    ViewData["Title"] = "Monitor de Sala";
+}
+
+<div class="container mt-4">
+
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">🏥 Monitor de Sala</h1>
+        <h5 class="text-muted">
+            Turnos de atención del día
+        </h5>
+    </div>
+
+    <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0 text-center">
+                📋 Estado de Turnos
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle text-center">
+
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Turno</th>
+                            <th>Consultorio</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaTurnos">
+                        <tr>
+                            <td colspan="4">
+                                Cargando turnos...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+
+        <p class="text-muted">
+            🔄 Actualización automática cada 5 segundos
+        </p>
+
+        <p id="estadoActualizacion"
+           class="small text-muted"
+           role="status">
+            Consultando información...
+        </p>
+
+        <a asp-controller="Recepcion"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Volver a Recepción
+        </a>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const urlTurnos = '@Url.Action("ObtenerTurnos", "Monitor")';
+        const tablaTurnos = document.getElementById("tablaTurnos");
+        const estadoActualizacion =
+            document.getElementById("estadoActualizacion");
+
+        let consultandoTurnos = false;
+
+        async function actualizarMonitor() {
+            if (consultandoTurnos) return;
+
+            consultandoTurnos = true;
+
+            try {
+                const respuesta = await fetch(urlTurnos, {
+                    cache: "no-store"
+                });
+
+                if (!respuesta.ok) {
+                    throw new Error("No fue posible consultar los turnos.");
+                }
+
+                const turnos = await respuesta.json();
+
+                // Limpiar únicamente las filas de la tabla.
+                tablaTurnos.replaceChildren();
+
+                if (turnos.length === 0) {
+                    const fila = tablaTurnos.insertRow();
+                    const celda = fila.insertCell();
+
+                    celda.colSpan = 4;
+                    celda.textContent =
+                        "No hay turnos activos para hoy.";
+                } else {
+                    turnos.forEach(turno => {
+                        const fila = tablaTurnos.insertRow();
+
+                        fila.insertCell().textContent =
+                            turno.codigoTurno;
+
+                        fila.insertCell().textContent =
+                            turno.consultorio;
+
+                        fila.insertCell().textContent =
+                            turno.hora;
+
+                        const celdaEstado = fila.insertCell();
+                        const etiqueta = document.createElement("span");
+
+                        etiqueta.textContent = turno.estado;
+                        etiqueta.className = "badge fs-6 ";
+
+                        switch (turno.estado) {
+                            case "En Consulta":
+                                etiqueta.className += "bg-success";
+                                break;
+
+                            case "En Espera":
+                                etiqueta.className +=
+                                    "bg-warning text-dark";
+                                break;
+
+                            default:
+                                etiqueta.className += "bg-primary";
+                        }
+
+                        celdaEstado.appendChild(etiqueta);
+                    });
+                }
+
+                estadoActualizacion.textContent =
+                    "Última actualización: " +
+                    new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error(error);
+
+                estadoActualizacion.textContent =
+                    "No se pudo actualizar el monitor. " +
+                    "Se intentará nuevamente.";
+            } finally {
+                consultandoTurnos = false;
+            }
+        }
+
+        // Primera consulta al abrir la pantalla.
+        actualizarMonitor();
+
+        // Consultas posteriores sin recargar la página.
+        setInterval(actualizarMonitor, 5000);
+    </script>
 }
