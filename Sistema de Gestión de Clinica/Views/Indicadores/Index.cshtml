@@ -1,0 +1,104 @@
+﻿@model Sistema_Gestión_Clinica.ViewModels.IndicadoresViewModel
+
+@{
+    ViewData["Title"] = "Vista de Indicadores";
+}
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h2>Panel de Indicadores de Recepción</h2>
+
+        <p class="text-muted">
+            Resumen de citas del día:
+            <strong>
+                @Model.Fecha.ToString("dd/MM/yyyy")
+            </strong>
+        </p>
+    </div>
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-primary h-100">
+                <div class="card-body text-center">
+                    <h5>Total de citas del día</h5>
+                    <h1 class="text-primary">
+                        @Model.TotalCitas
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-warning h-100">
+                <div class="card-body text-center">
+                    <h5>Citas pendientes</h5>
+                    <h1 class="text-warning">
+                        @Model.CitasPendientes
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-info h-100">
+                <div class="card-body text-center">
+                    <h5>Pacientes en espera</h5>
+                    <h1 class="text-info">
+                        @Model.PacientesEnEspera
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-success h-100">
+                <div class="card-body text-center">
+                    <h5>Citas finalizadas</h5>
+                    <h1 class="text-success">
+                        @Model.CitasFinalizadas
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-danger h-100">
+                <div class="card-body text-center">
+                    <h5>Citas canceladas</h5>
+                    <h1 class="text-danger">
+                        @Model.CitasCanceladas
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-secondary h-100">
+                <div class="card-body text-center">
+                    <h5>Pacientes no presentados</h5>
+                    <h1 class="text-secondary">
+                        @Model.PacientesNoPresentados
+                    </h1>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="Recepcion"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Volver a Recepción
+        </a>
+
+        <a asp-controller="Indicadores"
+           asp-action="Index"
+           class="btn btn-primary">
+            Actualizar indicadores
+        </a>
+    </div>
+
+</div>

@@ -109,5 +109,31 @@ namespace Sistema_Gestión_Clinica.Controllers
 
             return View(model);
         }
+
+
+        // GET: Paciente/ObtenerFilaVirtual/5
+        [HttpGet]
+        public async Task<IActionResult> ObtenerFilaVirtual(int id)
+        {
+            var modelo =
+                await _filaVirtualService.ObtenerEstadoFilaAsync(id);
+
+            if (modelo == null)
+            {
+                return NotFound(new
+                {
+                    mensaje = "No se encontró la cita."
+                });
+            }
+
+            return Json(new
+            {
+                pacientesAdelante = modelo.PacientesAdelante,
+                tiempoEstimadoMinutos =
+                    modelo.TiempoEstimadoMinutos,
+                estadoActual = modelo.EstadoActual
+            });
+        }
+
     }
 }

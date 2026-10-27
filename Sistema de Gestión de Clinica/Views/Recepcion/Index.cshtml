@@ -5,64 +5,158 @@
 }
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <h2>🏢 Panel de Recepción y Control de Citas</h2>
-        <span class="badge bg-dark fs-6">Hoy: @DateTime.Today.ToString("dd/MM/yyyy")</span>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+            <!-- Botón: Paciente sin cita -->
+            <a asp-controller="Recepcion"
+               asp-action="WalkIn"
+               class="btn btn-primary">
+                ➕ Paciente sin cita
+            </a>
+
+            <!-- Botón: Vista de indicadores -->
+            <a asp-controller="Indicadores"
+               asp-action="Index"
+               class="btn btn-info">
+                📊 Ver indicadores
+            </a>
+
+            
+            <!-- Botón para abrir el Monitor de Sala -->
+            <a asp-controller="Monitor"
+               asp-action="Index"
+               class="btn btn-success">
+                🖥️ Monitor de Sala
+            </a>
+
+
+            <!-- Fecha actual -->
+            <span class="badge bg-dark fs-6">
+                Hoy: @DateTime.Today.ToString("dd/MM/yyyy")
+            </span>
+
+        </div>
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <table class="table table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Turno</th>
-                        <th>Paciente</th>
-                        <th>Médico / Consultorio</th>
-                        <th>Hora Programada</th>
-                        <th>Check-In</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var cita in Model)
-                    {
+
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+
+                    <thead class="table-dark">
                         <tr>
-                            <td><strong>@cita.CodigoTurno</strong></td>
-                            <td>@cita.Paciente?.Nombre @cita.Paciente?.Apellido</td>
-                            <td>Dr/a. @cita.Medico?.Nombre @cita.Medico?.Apellido</td>
-                            <td>@cita.FechaHora.ToString("hh:mm tt")</td>
-                            <td>@(cita.HoraCheckIn?.ToString("hh:mm tt") ?? "--:--")</td>
-                            <td>
-                                <span class="badge @(cita.EstadoCita?.NombreEstado switch
-                                      {
-                                          "Agendada" => "bg-primary",
-                                          "En Espera" => "bg-warning text-dark",
-                                          "En Consulta" => "bg-info text-dark",
-                                          "Finalizada" => "bg-success",
-                                          "Cancelada" => "bg-danger",
-                                          _ => "bg-secondary"
-                                      })">
-                                    @cita.EstadoCita?.NombreEstado
-                                </span>
-                            </td>
-                            <td>
-                                @if (cita.EstadoCita?.NombreEstado == "Agendada")
-                                {
-                                    <form asp-action="MarcarLlegada" method="post" class="d-inline">
-                                        <input type="hidden" name="idCita" value="@cita.IdCita" />
-                                        <button type="submit" class="btn btn-sm btn-success">📌 Marcar Llegada</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span class="text-muted fs-7">Registrado</span>
-                                }
-                            </td>
+                            <th>Turno</th>
+                            <th>Paciente</th>
+                            <th>Médico / Consultorio</th>
+                            <th>Hora Programada</th>
+                            <th>Check-In</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var cita in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@cita.CodigoTurno</strong>
+                                </td>
+
+                                <td>
+                                    @cita.Paciente?.Nombre
+                                    @cita.Paciente?.Apellido
+                                </td>
+
+                                <td>
+                                    Dr/a. @cita.Medico?.Nombre
+                                    @cita.Medico?.Apellido
+                                </td>
+
+                                <td>
+                                    @cita.FechaHora.ToString("hh:mm tt")
+                                </td>
+
+                                <td>
+                                    @(cita.HoraCheckIn?.ToString("hh:mm tt") ?? "--:--")
+                                </td>
+
+                                <td>
+                                    <span class="badge @(cita.EstadoCita?.NombreEstado switch
+                                          {
+                                              "Agendada" => "bg-primary",
+                                              "En Espera" => "bg-warning text-dark",
+                                              "En Consulta" => "bg-info text-dark",
+                                              "Finalizada" => "bg-success",
+                                              "Cancelada" => "bg-danger",
+                                              "No-Show" => "bg-secondary",
+                                              _ => "bg-secondary"
+                                          })">
+                                        @cita.EstadoCita?.NombreEstado
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (cita.EstadoCita?.NombreEstado == "Agendada")
+                                    {
+                                        <form asp-action="MarcarLlegada"
+                                              method="post"
+                                              class="d-inline">
+
+                                            <input type="hidden"
+                                                   name="idCita"
+                                                   value="@cita.IdCita" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                📌 Marcar Llegada
+                                            </button>
+
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fs-7">
+                                            Registrado
+                                        </span>
+                                    }
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
         </div>
     </div>
+
+</div>
+
+                                    
+@* FORMULARIO TEMPORAL PARA PRUEBA CP-01 *@
+
+<div class="container mt-4 mb-4">
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show"
+             role="alert">
+
+            <strong>Mensaje del sistema:</strong>
+            @TempData["Mensaje"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Cerrar">
+            </button>
+        </div>
+    }
 </div>
