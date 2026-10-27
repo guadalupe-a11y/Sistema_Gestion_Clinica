@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
+    [Authorize] // <--- ESTO BLOQUEA EL ACCESO A USUARIOS NO AUTENTICADOS
     public class RecepcionController : Controller
     {
         private readonly SistemaDeGestionDB _context;
