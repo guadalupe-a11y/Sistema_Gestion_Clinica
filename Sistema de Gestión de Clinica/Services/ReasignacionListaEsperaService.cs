@@ -19,7 +19,6 @@ namespace Sistema_Gestión_Clinica.Services
             int idMedico,
             DateTime fechaHora)
         {
-  linda-recepcion-monitor
             // 1. No reasignar horarios que ya pasaron.
             if (fechaHora <= DateTime.Now)
                 return;
@@ -28,7 +27,6 @@ namespace Sistema_Gestión_Clinica.Services
                 .Where(l => l.IdMedico == idMedico && !l.Atendido)
                 .OrderBy(l => l.FechaRegistro)
                 .FirstOrDefaultAsync();
- main
 
             // 2. Buscar el médico y su especialidad.
             var medico = await _context.Medico
@@ -88,7 +86,6 @@ namespace Sistema_Gestión_Clinica.Services
             // recibir ese horario.
             foreach (var solicitud in solicitudes)
             {
- linda-recepcion-monitor
                 bool pacienteOcupado = await _context.Cita
                     .Include(c => c.EstadoCita)
                     .AnyAsync(c =>
@@ -127,7 +124,6 @@ namespace Sistema_Gestión_Clinica.Services
                 // 9. Guardar ambos cambios.
 
                 enEspera.Atendido = true;
- main
                 await _context.SaveChangesAsync();
 
                 // Solo se asigna un paciente por cupo.

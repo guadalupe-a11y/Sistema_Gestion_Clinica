@@ -46,14 +46,12 @@ namespace Sistema_Gestión_Clinica.Controllers
             // 2. Validación de contraseña con doble soporte (Texto plano vs PasswordHasher)
             bool esPasswordValida = false;
 
-            // A. Verificación directa si está en texto plano en SQL ('123456')
             if (usuario.PasswordHash == model.Contrasena)
             {
                 esPasswordValida = true;
             }
             else
             {
-                // B. Verificación con PasswordHasher previniendo excepciones de formato Base64
                 try
                 {
                     var result = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, model.Contrasena);
@@ -78,7 +76,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                 return View(model);
             }
 
-            // 3. Crear Claims de Autenticación (Permite reemplazar idPaciente=1 e idMedico=1 dinámicamente)
+            // 3. Crear Claims de Autenticación
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
@@ -151,7 +149,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                 Activo = true
             };
 
-            // Encriptación segura con PasswordHasher
+            // Encriptación usando model.Contrasena
             nuevoUsuario.PasswordHash = _passwordHasher.HashPassword(nuevoUsuario, model.Password);
 
             _context.Usuario.Add(nuevoUsuario);

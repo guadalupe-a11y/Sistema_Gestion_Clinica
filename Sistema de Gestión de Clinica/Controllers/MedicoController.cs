@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
@@ -6,7 +9,7 @@ using Sistema_Gestión_Clinica.Models;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
-    [Authorize] // <--- ESTO BLOQUEA EL ACCESO A USUARIOS NO AUTENTICADOS
+    [Authorize(Roles = "Medico")] // Protege el acceso exclusivo para el rol Medico
     public class MedicoController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -16,17 +19,31 @@ namespace Sistema_Gestión_Clinica.Controllers
             _context = context;
         }
 
-        // GET: Medico/Index/1 (1 = IdMedico de prueba)
-        public async Task<IActionResult> Index(int idMedico = 1)
+        // Método auxiliar para obtener el IdMedico dinámico del usuario autenticado
+        private int? ObtenerIdMedicoLogueado()
         {
+            var claim = User.FindFirst("IdMedico")?.Value;
+            return int.TryParse(claim, out int id) ? id : null;
+        }
+
+        // GET: Medico/Index
+        public async Task<IActionResult> Index()
+        {
+            int? idMedico = ObtenerIdMedicoLogueado();
+
+            if (idMedico == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var citasHoy = await _context.Cita
                 .Include(c => c.Paciente)
                 .Include(c => c.EstadoCita)
-                .Where(c => c.IdMedico == idMedico && c.FechaHora.Date == DateTime.Today)
+                .Where(c => c.IdMedico == idMedico.Value && c.FechaHora.Date == DateTime.Today)
                 .OrderBy(c => c.FechaHora)
                 .ToListAsync();
 
-            ViewBag.IdMedico = idMedico;
+            ViewBag.IdMedico = idMedico.Value;
             return View(citasHoy);
         }
 
@@ -89,7 +106,7 @@ namespace Sistema_Gestión_Clinica.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = "Consulta finalizada exitosamente.";
-            return RedirectToAction("Index", new { idMedico = cita.IdMedico });
+            return RedirectToAction("Index");
         }
     }
 }

@@ -8,7 +8,6 @@ namespace Sistema_Gestión_Clinica.Controllers
 {
     public class MonitorController : Controller
     {
-linda-recepcion-monitor
         private readonly SistemaDeGestionDB _context;
 
         public MonitorController(SistemaDeGestionDB context)
@@ -60,7 +59,5 @@ linda-recepcion-monitor
             return Json(turnos);
         }
 
-
- main
     }
 }
