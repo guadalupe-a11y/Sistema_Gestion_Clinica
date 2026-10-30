@@ -8,24 +8,49 @@
 
 <form asp-action="Reprogramar" method="post">
     <input type="hidden" asp-for="IdCita" />
+    <input type="hidden" asp-for="IdMedico" />
+    <input type="hidden" asp-for="IdEspecialidad" />
 
     <div class="mb-3">
-        <label asp-for="IdEspecialidad"></label>
-        <select asp-for="IdEspecialidad" class="form-control"
-                asp-items="@(new SelectList(ViewBag.Especialidades, "IdEspecialidad", "NombreEspecialidad"))">
-            <option value="">-- Seleccione --</option>
-        </select>
+        <label asp-for="Fecha"></label>
+        <input asp-for="Fecha" type="date" class="form-control" />
     </div>
+
     <div class="mb-3">
-        <label asp-for="IdMedico"></label>
-        <select asp-for="IdMedico" class="form-control"
-                asp-items="@(new SelectList(ViewBag.Medicos, "IdMedico", "Nombre"))">
+        <label asp-for="Hora"></label>
+        <select asp-for="Hora" class="form-control">
             <option value="">-- Seleccione --</option>
+            <option value="08:00">08:00 AM</option>
+            <option value="08:30">08:30 AM</option>
+            <option value="09:00">09:00 AM</option>
+            <option value="09:30">09:30 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="10:30">10:30 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="11:30">11:30 AM</option>
+            <option value="12:00">12:00 PM</option>
+            <option value="12:30">12:30 PM</option>
+            <option value="13:00">01:00 PM</option>
+            <option value="13:30">01:30 PM</option>
+            <option value="14:00">02:00 PM</option>
+            <option value="14:30">02:30 PM</option>
+            <option value="15:00">03:00 PM</option>
+            <option value="15:30">03:30 PM</option>
+            <option value="16:00">04:00 PM</option>
+            <option value="16:30">04:30 PM</option>
+            <option value="17:00">05:00 PM</option>
+            <option value="17:30">05:30 PM</option>
+            <option value="18:00">06:00 PM</option>
+            <option value="18:30">06:30 PM</option>
+            <option value="19:00">07:00 PM</option>
         </select>
     </div>
-    <div class="mb-3"><label asp-for="Fecha"></label><input asp-for="Fecha" type="date" class="form-control" /></div>
-    <div class="mb-3"><label asp-for="Hora"></label><input asp-for="Hora" type="time" class="form-control" /></div>
-    <div class="mb-3"><label asp-for="Motivo"></label><textarea asp-for="Motivo" class="form-control"></textarea></div>
+
+    <div class="mb-3">
+        <label asp-for="Motivo"></label>
+        <textarea asp-for="Motivo" class="form-control"></textarea>
+    </div>
+
     <button class="btn btn-primary">Guardar cambios</button>
     <a asp-action="MisCitas" class="btn btn-secondary">Volver</a>
 </form>

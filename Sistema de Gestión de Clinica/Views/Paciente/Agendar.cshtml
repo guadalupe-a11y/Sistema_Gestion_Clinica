@@ -1,6 +1,9 @@
 ﻿@model Sistema_Gestión_Clinica.ViewModels.AgendarCitaViewModel
+@using Sistema_Gestión_Clinica.Models
 @{
     ViewData["Title"] = "Agendar cita";
+    var especialidades = ViewBag.Especialidades as IEnumerable<Especialidad> ?? new List<Especialidad>();
+    var medicos = ViewBag.Medicos as IEnumerable<Medico> ?? new List<Medico>();
 }
 
 <h2>Agendar cita</h2>
@@ -9,25 +12,88 @@
 <form asp-action="Agendar" method="post">
     <div class="mb-3">
         <label asp-for="IdEspecialidad"></label>
-        <select asp-for="IdEspecialidad" class="form-control"
-                asp-items="@(new SelectList(ViewBag.Especialidades, "IdEspecialidad", "NombreEspecialidad"))">
+        <select asp-for="IdEspecialidad" id="IdEspecialidad" class="form-control">
             <option value="">-- Seleccione --</option>
+            @foreach (var e in especialidades)
+            {
+                <option value="@e.IdEspecialidad">@e.NombreEspecialidad</option>
+            }
         </select>
+        <span asp-validation-for="IdEspecialidad" class="text-danger"></span>
     </div>
+
     <div class="mb-3">
         <label asp-for="IdMedico"></label>
-        <select asp-for="IdMedico" class="form-control"
-                asp-items="@(new SelectList(ViewBag.Medicos, "IdMedico", "Nombre"))">
+        <select asp-for="IdMedico" id="IdMedico" class="form-control">
             <option value="">-- Seleccione --</option>
+            @foreach (var m in medicos)
+            {
+                <option value="@m.IdMedico" data-esp="@m.IdEspecialidad">@m.Nombre</option>
+            }
         </select>
+        <span asp-validation-for="IdMedico" class="text-danger"></span>
     </div>
-    <div class="mb-3"><label asp-for="Fecha"></label><input asp-for="Fecha" type="date" class="form-control" /></div>
-    <div class="mb-3"><label asp-for="Hora"></label><input asp-for="Hora" type="time" class="form-control" /></div>
-    <div class="mb-3"><label asp-for="Motivo"></label><textarea asp-for="Motivo" class="form-control"></textarea></div>
+
+    <div class="mb-3">
+        <label asp-for="Fecha"></label>
+        <input asp-for="Fecha" type="date" class="form-control" />
+        <span asp-validation-for="Fecha" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Hora"></label>
+        <select asp-for="Hora" class="form-control">
+            <option value="">-- Seleccione --</option>
+            <option value="08:00">08:00 AM</option>
+            <option value="08:30">08:30 AM</option>
+            <option value="09:00">09:00 AM</option>
+            <option value="09:30">09:30 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="10:30">10:30 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="11:30">11:30 AM</option>
+            <option value="12:00">12:00 PM</option>
+            <option value="12:30">12:30 PM</option>
+            <option value="13:00">01:00 PM</option>
+            <option value="13:30">01:30 PM</option>
+            <option value="14:00">02:00 PM</option>
+            <option value="14:30">02:30 PM</option>
+            <option value="15:00">03:00 PM</option>
+            <option value="15:30">03:30 PM</option>
+            <option value="16:00">04:00 PM</option>
+            <option value="16:30">04:30 PM</option>
+            <option value="17:00">05:00 PM</option>
+            <option value="17:30">05:30 PM</option>
+            <option value="18:00">06:00 PM</option>
+            <option value="18:30">06:30 PM</option>
+            <option value="19:00">07:00 PM</option>
+            <option value="19:30">07:30 PM</option>
+            <option value="20:00">08:00 PM</option>
+        </select>
+        <span asp-validation-for="Hora" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Motivo"></label>
+        <textarea asp-for="Motivo" class="form-control"></textarea>
+        <span asp-validation-for="Motivo" class="text-danger"></span>
+    </div>
+
     <button class="btn btn-primary">Agendar</button>
     <a asp-action="MisCitas" class="btn btn-secondary">Volver</a>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('IdEspecialidad').addEventListener('change', function () {
+            var esp = this.value;
+            var medicoSelect = document.getElementById('IdMedico');
+            medicoSelect.value = '';
+            Array.from(medicoSelect.options).forEach(function (opt) {
+                if (!opt.value) return;
+                opt.style.display = (!esp || opt.getAttribute('data-esp') === esp) ? '' : 'none';
+            });
+        });
+    </script>
 }

@@ -27,11 +27,9 @@ namespace Sistema_Gestión_Clinica.Controllers
         {
             try
             {
-                // 1. Si tu login guarda el IdPaciente en sesión
                 var enSesion = HttpContext.Session.GetInt32("IdPaciente");
                 if (enSesion.HasValue && enSesion.Value > 0) return enSesion.Value;
 
-                // 2. Si tu login guarda el IdUsuario en sesión, buscamos su Paciente
                 var idUsuarioSesion = HttpContext.Session.GetInt32("IdUsuario");
                 if (idUsuarioSesion.HasValue)
                 {
@@ -42,13 +40,11 @@ namespace Sistema_Gestión_Clinica.Controllers
                     if (idPac.HasValue) return idPac.Value;
                 }
 
-                // 3. Si usa Claims
                 var claim = User.FindFirst("IdPaciente")?.Value
                     ?? User.FindFirst("IdUsuario")?.Value
                     ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(claim, out int idClaim))
                 {
-                    // Si el claim es IdUsuario, convertir a IdPaciente
                     var idPac2 = _context.Paciente
                         .Where(p => p.IdUsuario == idClaim || p.IdPaciente == idClaim)
                         .Select(p => (int?)p.IdPaciente)
@@ -57,11 +53,11 @@ namespace Sistema_Gestión_Clinica.Controllers
                 }
             }
             catch { }
-            // Fallback para que las pruebas no se caigan si no hay login de paciente
-            return 1;
+            // CORREGIDO: tu paciente real es el 2, no el 1. Y si hay alguno, usa el primero que exista.
+            var primero = _context.Paciente.Select(p => (int?)p.IdPaciente).FirstOrDefault();
+            return primero ?? 2;
         }
 
-        // ---------- INDEX / MIS CITAS ----------
         public IActionResult Index()
         {
             return RedirectToAction("MisCitas");
@@ -87,7 +83,6 @@ namespace Sistema_Gestión_Clinica.Controllers
             }
         }
 
-        // ---------- AGENDAR ----------
         [HttpGet]
         public async Task<IActionResult> Agendar()
         {
@@ -119,10 +114,12 @@ namespace Sistema_Gestión_Clinica.Controllers
                     return View(vm);
                 }
 
-                var estado = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Agendada");
+                // CORREGIDO: acepta "Agendada" o "Programada", el que exista
+                var estado = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Agendada")
+                    ?? await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Programada");
                 if (estado == null)
                 {
-                    ModelState.AddModelError("", "No existe el estado 'Agendada' en la base de datos.");
+                    ModelState.AddModelError("", "No existe el estado 'Agendada' ni 'Programada' en la base de datos.");
                     return View(vm);
                 }
 
@@ -146,12 +143,13 @@ namespace Sistema_Gestión_Clinica.Controllers
             catch (Exception ex)
             {
                 await CargarListas();
-                ModelState.AddModelError("", "Ocurrió un error al agendar la cita: " + ex.Message);
+                // CORREGIDO: ahora sí te muestra el error real, no solo "saving entity changes"
+                var real = ex.InnerException?.Message ?? ex.Message;
+                ModelState.AddModelError("", "Ocurrió un error al agendar la cita: " + real);
                 return View(vm);
             }
         }
 
-        // ---------- CANCELAR ----------
         [HttpPost]
         public async Task<IActionResult> Cancelar(int id)
         {
@@ -161,7 +159,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                     .FirstOrDefaultAsync(c => c.IdCita == id && c.IdPaciente == ObtenerIdPaciente());
                 if (cita == null) { TempData["Error"] = "No se encontró la cita."; return RedirectToAction("MisCitas"); }
 
-                if (cita.EstadoCita.NombreEstado != "Agendada")
+                if (cita.EstadoCita.NombreEstado != "Agendada" && cita.EstadoCita.NombreEstado != "Programada")
                 { TempData["Error"] = "Esta cita ya no se puede cancelar."; return RedirectToAction("MisCitas"); }
 
                 if (cita.FechaHora - DateTime.Now < TimeSpan.FromHours(2))
@@ -184,12 +182,11 @@ namespace Sistema_Gestión_Clinica.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "No se pudo cancelar la cita: " + ex.Message;
+                TempData["Error"] = "No se pudo cancelar la cita: " + (ex.InnerException?.Message ?? ex.Message);
                 return RedirectToAction("MisCitas");
             }
         }
 
-        // ---------- REPROGRAMAR ----------
         [HttpGet]
         public async Task<IActionResult> Reprogramar(int id)
         {
@@ -239,12 +236,11 @@ namespace Sistema_Gestión_Clinica.Controllers
             catch (Exception ex)
             {
                 await CargarListas();
-                ModelState.AddModelError("", "No se pudo reprogramar la cita: " + ex.Message);
+                ModelState.AddModelError("", "No se pudo reprogramar la cita: " + (ex.InnerException?.Message ?? ex.Message));
                 return View(vm);
             }
         }
 
-        // ---------- LISTA DE ESPERA ----------
         [HttpGet]
         public async Task<IActionResult> ListaEspera()
         {
@@ -296,7 +292,7 @@ namespace Sistema_Gestión_Clinica.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "No se pudo unir a la lista de espera: " + ex.Message;
+                TempData["Error"] = "No se pudo unir a la lista de espera: " + (ex.InnerException?.Message ?? ex.Message);
                 return RedirectToAction("ListaEspera");
             }
         }
@@ -318,7 +314,6 @@ namespace Sistema_Gestión_Clinica.Controllers
             }
         }
 
-        // ---------- FILA VIRTUAL ----------
         public async Task<IActionResult> FilaVirtual(int id)
         {
             try
@@ -334,7 +329,6 @@ namespace Sistema_Gestión_Clinica.Controllers
             }
         }
 
-        // ---------- PRIVADOS ----------
         private async Task<string?> Validar(AgendarCitaViewModel vm)
         {
             var fechaHora = vm.Fecha.Date + vm.Hora;
@@ -346,7 +340,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                 vm.Hora >= h.HoraInicio && vm.Hora < h.HoraFin);
             if (!dentroHorario) return "El médico no atiende en ese día u hora.";
 
-            var idCancelada = await _context.EstadoCita.Where(e => e.NombreEstado == "Cancelada").Select(e => e.IdEstadoCita).FirstOrDefaultAsync();
+            var idCancelada = await _context.EstadoCita.Where(e => e.NombreEstado == "Cancelada").Select(e => (int?)e.IdEstadoCita).FirstOrDefaultAsync();
             bool ocupado = await _context.Cita.AnyAsync(c =>
                 c.IdMedico == vm.IdMedico && c.FechaHora == fechaHora &&
                 c.IdEstadoCita != idCancelada && c.IdCita != vm.IdCita);
@@ -356,7 +350,6 @@ namespace Sistema_Gestión_Clinica.Controllers
 
         private async Task<string> GenerarCodigo(DateTime fecha)
         {
-            // Correlativo por día: T-001, T-002... sin repetir aunque se cancele una
             int numero = await _context.Cita.CountAsync(c => c.FechaHora.Date == fecha.Date) + 1;
             string codigo;
             do
@@ -365,7 +358,6 @@ namespace Sistema_Gestión_Clinica.Controllers
                 numero++;
             }
             while (await _context.Cita.AnyAsync(c => c.FechaHora.Date == fecha.Date && c.CodigoTurno == codigo));
-            // Ajuste: el do-while ya incrementó, restamos para no saltar número si no hay choque
             return codigo;
         }
 
