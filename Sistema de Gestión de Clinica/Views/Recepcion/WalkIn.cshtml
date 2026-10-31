@@ -1,6 +1,151 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@{
+    ViewData["Title"] = "Paciente sin cita";
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Registro de paciente sin cita</h2>
+
+        <a asp-controller="Recepcion"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Volver a recepción
+        </a>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-info">
+            @TempData["Mensaje"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            Datos del paciente
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="Recepcion"
+                  asp-action="WalkIn"
+                  method="post">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="DUI" class="form-label">DUI</label>
+                        <input type="text"
+                               id="DUI"
+                               name="DUI"
+                               class="form-control"
+                               maxlength="10"
+                               placeholder="Ejemplo: 01234567-8"
+                               required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Telefono" class="form-label">Teléfono</label>
+                        <input type="tel"
+                               id="Telefono"
+                               name="Telefono"
+                               class="form-control"
+                               maxlength="15"
+                               required />
+                    </div>
+
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="Correo" class="form-label">
+                            Correo electrónico
+                        </label>
+                        <input type="email"
+                               id="Correo"
+                               name="Correo"
+                               class="form-control"
+                               maxlength="100"
+                               placeholder="Solo si es un paciente nuevo" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Contrasena" class="form-label">
+                            Contraseña para el usuario nuevo
+                        </label>
+                        <input type="password"
+                               id="Contrasena"
+                               name="Contrasena"
+                               class="form-control"
+                               placeholder="Solo si es un paciente nuevo" />
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Nombre" class="form-label">Nombre</label>
+                        <input type="text"
+                               id="Nombre"
+                               name="Nombre"
+                               class="form-control"
+                               maxlength="50"
+                               required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="Apellido" class="form-label">Apellido</label>
+                        <input type="text"
+                               id="Apellido"
+                               name="Apellido"
+                               class="form-control"
+                               maxlength="50"
+                               required />
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label for="IdMedico" class="form-label">
+                            Médico disponible
+                        </label>
+
+                        <select id="IdMedico"
+                                name="IdMedico"
+                                class="form-select"
+                                required>
+                            <option value="">Seleccione un médico</option>
+
+                            @if (ViewBag.Medicos != null)
+                            {
+                                foreach (var medico in ViewBag.Medicos)
+                                {
+                                    <option value="@medico.IdMedico">
+                                        Dr/a. @medico.Nombre @medico.Apellido
+                                        - @medico.Especialidad?.NombreEspecialidad
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label for="MotivoConsulta" class="form-label">
+                            Motivo de consulta
+                        </label>
+
+                        <textarea id="MotivoConsulta"
+                                  name="MotivoConsulta"
+                                  class="form-control"
+                                  rows="3"
+                                  maxlength="255"
+                                  placeholder="Describa brevemente el motivo de la consulta"></textarea>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>Importante:</strong>
+                    la asignación del turno dependerá de la disponibilidad
+                    del médico y de las citas registradas.
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    Registrar paciente y solicitar turno
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+

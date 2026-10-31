@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
@@ -7,6 +8,7 @@ using Sistema_Gestión_Clinica.ViewModels;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
+    [Authorize] // <--- ESTO BLOQUEA EL ACCESO A USUARIOS NO AUTENTICADOS
     public class PacienteController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -374,5 +376,31 @@ namespace Sistema_Gestión_Clinica.Controllers
                 ViewBag.Medicos = new List<Medico>();
             }
         }
+
+
+        // GET: Paciente/ObtenerFilaVirtual/5
+        [HttpGet]
+        public async Task<IActionResult> ObtenerFilaVirtual(int id)
+        {
+            var modelo =
+                await _filaVirtualService.ObtenerEstadoFilaAsync(id);
+
+            if (modelo == null)
+            {
+                return NotFound(new
+                {
+                    mensaje = "No se encontró la cita."
+                });
+            }
+
+            return Json(new
+            {
+                pacientesAdelante = modelo.PacientesAdelante,
+                tiempoEstimadoMinutos =
+                    modelo.TiempoEstimadoMinutos,
+                estadoActual = modelo.EstadoActual
+            });
+        }
+
     }
 }

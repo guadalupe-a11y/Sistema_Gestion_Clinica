@@ -1,4 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
@@ -9,10 +16,12 @@ namespace Sistema_Gestión_Clinica.Controllers
     public class AccountController : Controller
     {
         private readonly SistemaDeGestionDB _context;
+        private readonly PasswordHasher<Usuario> _passwordHasher;
 
         public AccountController(SistemaDeGestionDB context)
         {
             _context = context;
+            _passwordHasher = new PasswordHasher<Usuario>();
         }
 
         [HttpGet]
@@ -23,17 +32,82 @@ namespace Sistema_Gestión_Clinica.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            // Usa u.Contrasena en lugar de u.PasswordHash
+            // 1. Buscar usuario por correo
             var usuario = await _context.Usuario
                 .Include(u => u.Rol)
-                .FirstOrDefaultAsync(u => u.Correo == model.Correo && u.Contrasena == model.Contrasena);
-            if (usuario == null)
+                .FirstOrDefaultAsync(u => u.Correo == model.Correo);
+
+            if (usuario == null || !usuario.Activo)
             {
-                ModelState.AddModelError("", "Correo o contraseña incorrectos.");
+                ModelState.AddModelError(string.Empty, "Credenciales inválidas o la cuenta se encuentra inactiva.");
                 return View(model);
             }
 
-            // Redirección por Rol
+            // 2. Validación de contraseña con doble soporte (Texto plano vs PasswordHasher)
+            bool esPasswordValida = false;
+
+            if (usuario.PasswordHash == model.Contrasena)
+            {
+                esPasswordValida = true;
+            }
+            else
+            {
+                try
+                {
+                    var result = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, model.Contrasena);
+                    if (result != PasswordVerificationResult.Failed)
+                    {
+                        esPasswordValida = true;
+                    }
+                }
+                catch (FormatException)
+                {
+                    esPasswordValida = false;
+                }
+                catch (Exception)
+                {
+                    esPasswordValida = false;
+                }
+            }
+
+            if (!esPasswordValida)
+            {
+                ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
+                return View(model);
+            }
+
+            // 3. Crear Claims de Autenticación
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Correo),
+                new Claim(ClaimTypes.Role, usuario.Rol?.NombreRol ?? "Paciente")
+            };
+
+            if (usuario.Rol?.NombreRol == "Paciente")
+            {
+                var paciente = await _context.Paciente.FirstOrDefaultAsync(p => p.IdUsuario == usuario.IdUsuario);
+                if (paciente != null) claims.Add(new Claim("IdPaciente", paciente.IdPaciente.ToString()));
+            }
+            else if (usuario.Rol?.NombreRol == "Medico")
+            {
+                var medico = await _context.Medico.FirstOrDefaultAsync(m => m.IdUsuario == usuario.IdUsuario);
+                if (medico != null) claims.Add(new Claim("IdMedico", medico.IdMedico.ToString()));
+            }
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
+            // 4. Redirección por Rol
             return usuario.Rol?.NombreRol switch
             {
                 "Administrador" => RedirectToAction("Index", "Admin"),
@@ -48,49 +122,71 @@ namespace Sistema_Gestión_Clinica.Controllers
         public IActionResult Register() => View();
 
         [HttpPost]
-        public async Task<IActionResult> Register(string dui, string nombre, string apellido, string telefono, string correo, string password)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (await _context.Usuario.AnyAsync(u => u.Correo == correo))
+            if (!ModelState.IsValid) return View(model);
+
+            // Validación de correo único
+            if (await _context.Usuario.AnyAsync(u => u.Correo == model.Correo))
             {
-                ViewBag.Error = "El correo ya está registrado.";
-                return View();
+                ModelState.AddModelError("Correo", "El correo ya está registrado.");
+                return View(model);
+            }
+
+            // Validación de DUI único
+            if (await _context.Paciente.AnyAsync(p => p.DUI == model.DUI))
+            {
+                ModelState.AddModelError("DUI", "El número de DUI ya está registrado.");
+                return View(model);
             }
 
             var rolPaciente = await _context.Rol.FirstOrDefaultAsync(r => r.NombreRol == "Paciente");
 
-            // 1. Crear Usuario
             var nuevoUsuario = new Usuario
             {
                 IdRol = rolPaciente?.IdRol ?? 4,
-                Correo = correo,
-                PasswordHash = password,
+                Correo = model.Correo,
                 Activo = true
             };
+
+            // Encriptación usando model.Contrasena
+            nuevoUsuario.PasswordHash = _passwordHasher.HashPassword(nuevoUsuario, model.Password);
+
             _context.Usuario.Add(nuevoUsuario);
             await _context.SaveChangesAsync();
 
-            // 2. Crear Paciente
             var nuevoPaciente = new Paciente
             {
                 IdUsuario = nuevoUsuario.IdUsuario,
-                DUI = dui,
-                Nombre = nombre,
-                Apellido = apellido,
-                Telefono = telefono
+                DUI = model.DUI,
+                Nombre = model.Nombre,
+                Apellido = model.Apellido,
+                Telefono = model.Telefono
             };
+
             _context.Paciente.Add(nuevoPaciente);
             await _context.SaveChangesAsync();
 
-            // 3. Crear Expediente
             var expediente = new Expediente
             {
                 IdPaciente = nuevoPaciente.IdPaciente,
                 FechaApertura = DateTime.Now
             };
+
             _context.Expediente.Add(expediente);
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Login");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied() => View();
     }
 }
