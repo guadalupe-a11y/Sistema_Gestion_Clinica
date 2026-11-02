@@ -5,6 +5,9 @@ using Sistema_Gestión_Clinica.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Carga la configuración local individual si existe en la computadora actual
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 // 1. Agregar servicios MVC
 builder.Services.AddControllersWithViews();
 
@@ -52,7 +55,7 @@ using (var scope = app.Services.CreateScope())
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Ocurrió un error crítico al crear o inicializar la base de datos.");
 
-        // Lanza la excepción en desarrollo para visibilizar errores de conexión a SQL Server
+       // Lanza la excepción en desarrollo para visibilizar errores de conexión a SQL Server
         throw;
     }
 }

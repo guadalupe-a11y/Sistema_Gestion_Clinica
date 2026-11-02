@@ -5,3 +5,6 @@ obj/
 /.vs_respaldo/Sistema de Gestión de Clinica.slnx/v17/HierarchyCache.v1.txt
 /.vs_respaldo/VSWorkspaceState.json
 /.vs_respaldo
+
+# Configuración local individual por desarrollador
+appsettings.Local.json
