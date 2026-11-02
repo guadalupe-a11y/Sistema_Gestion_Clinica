@@ -6,7 +6,7 @@ using Sistema_Gestión_Clinica.Models;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
-    [Authorize] // <--- ESTO BLOQUEA EL ACCESO A USUARIOS NO AUTENTICADOS
+    [Authorize]
     public class RecepcionController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -16,19 +16,55 @@ namespace Sistema_Gestión_Clinica.Controllers
             _context = context;
         }
 
-        // GET: Recepcion/Index
-        public async Task<IActionResult> Index()
+        // GET: Recepcion/Index?estado=Agendada
+        public async Task<IActionResult> Index(string? estado)
         {
-            List<Models.Cita> citas1 = await _context.Cita
+            var query = _context.Cita
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
                 .Include(c => c.EstadoCita)
                 .Where(c => c.FechaHora.Date == DateTime.Today)
+                .AsQueryable();
+
+            // Filtrado dinámico por estado de la cita
+            if (!string.IsNullOrEmpty(estado) && estado != "Todas")
+            {
+                query = query.Where(c => c.EstadoCita != null && c.EstadoCita.NombreEstado == estado);
+            }
+
+            var citas = await query
                 .OrderBy(c => c.FechaHora)
                 .ToListAsync();
-            var citas = citas1;
+
+            ViewBag.EstadoFiltro = estado ?? "Todas";
 
             return View(citas);
+        }
+
+        // GET: Recepcion/VerExpediente/5
+        public async Task<IActionResult> VerExpediente(int idPaciente)
+        {
+            var expediente = await _context.Expediente
+                .Include(e => e.Paciente)
+                .FirstOrDefaultAsync(e => e.IdPaciente == idPaciente);
+
+            if (expediente == null)
+            {
+                TempData["Mensaje"] = "El paciente aún no cuenta con un expediente abierto.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            //// Cargar el historial de atenciones / consultas de forma segura
+            var historialAtenciones = await _context.RegistroAtencion
+                .Include(r => r.Cita)
+                    .ThenInclude(c => c!.Medico)
+                .Where(r => r.Cita != null && r.Cita.IdPaciente == idPaciente)
+                .OrderByDescending(r => r.FechaAtencion)
+                .ToListAsync();
+
+            ViewBag.Historial = historialAtenciones;
+
+            return View(expediente);
         }
 
         // POST: Recepcion/MarcarLlegada
@@ -46,26 +82,21 @@ namespace Sistema_Gestión_Clinica.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Validar que la cita corresponda al día actual.
             if (cita.FechaHora.Date != DateTime.Today)
             {
-                TempData["Mensaje"] =
-                    "Solo se puede registrar la llegada de citas del día actual.";
+                TempData["Mensaje"] = "Solo se puede registrar la llegada de citas del día actual.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Evitar registrar dos veces la llegada.
             if (cita.HoraCheckIn != null)
             {
                 TempData["Mensaje"] = "La llegada de este paciente ya fue registrada.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // Validar que la cita esté Agendada.
             if (cita.EstadoCita?.NombreEstado != "Agendada")
             {
-                TempData["Mensaje"] =
-                    "La cita no está en un estado válido para registrar la llegada.";
+                TempData["Mensaje"] = "La cita no está en un estado válido para registrar la llegada.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -88,7 +119,6 @@ namespace Sistema_Gestión_Clinica.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         [HttpGet]
         public async Task<IActionResult> WalkIn()
         {
@@ -100,7 +130,6 @@ namespace Sistema_Gestión_Clinica.Controllers
 
             return View();
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -114,7 +143,6 @@ namespace Sistema_Gestión_Clinica.Controllers
             int IdMedico,
             string? MotivoConsulta)
         {
-            // Recargar los médicos si hay que mostrar un error.
             async Task CargarMedicos()
             {
                 ViewBag.Medicos = await _context.Medico
@@ -152,43 +180,30 @@ namespace Sistema_Gestión_Clinica.Controllers
                 return View();
             }
 
-            // Buscar al paciente por DUI.
             var paciente = await _context.Paciente
                 .FirstOrDefaultAsync(p => p.DUI == DUI);
 
-            // Si es nuevo, crear Usuario, Paciente y Expediente.
             if (paciente == null)
             {
-                if (string.IsNullOrWhiteSpace(Correo) ||
-                    string.IsNullOrWhiteSpace(Contrasena))
+                if (string.IsNullOrWhiteSpace(Correo) || string.IsNullOrWhiteSpace(Contrasena))
                 {
-                    TempData["Mensaje"] =
-                        "El paciente es nuevo. Ingrese un correo y una contraseña para crear su usuario.";
-
+                    TempData["Mensaje"] = "El paciente es nuevo. Ingrese un correo y una contraseña para crear su usuario.";
                     await CargarMedicos();
                     return View();
                 }
 
-                bool correoExiste = await _context.Usuario
-                    .AnyAsync(u => u.Correo == Correo);
-
+                bool correoExiste = await _context.Usuario.AnyAsync(u => u.Correo == Correo);
                 if (correoExiste)
                 {
-                    TempData["Mensaje"] =
-                        "Ese correo ya está registrado. Verifique los datos o busque al paciente por su DUI.";
-
+                    TempData["Mensaje"] = "Ese correo ya está registrado. Verifique los datos o busque al paciente por su DUI.";
                     await CargarMedicos();
                     return View();
                 }
 
-                var rolPaciente = await _context.Rol
-                    .FirstOrDefaultAsync(r => r.NombreRol == "Paciente");
-
+                var rolPaciente = await _context.Rol.FirstOrDefaultAsync(r => r.NombreRol == "Paciente");
                 if (rolPaciente == null)
                 {
-                    TempData["Mensaje"] =
-                        "No se encontró el rol Paciente en la base de datos.";
-
+                    TempData["Mensaje"] = "No se encontró el rol Paciente en la base de datos.";
                     await CargarMedicos();
                     return View();
                 }
@@ -226,12 +241,8 @@ namespace Sistema_Gestión_Clinica.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Comprobar si el médico atiende hoy y a esta hora.
             var ahora = DateTime.Now;
-
-            int diaSemana = ahora.DayOfWeek == DayOfWeek.Sunday
-                ? 7
-                : (int)ahora.DayOfWeek;
+            int diaSemana = ahora.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)ahora.DayOfWeek;
 
             var tieneHorario = await _context.HorarioMedico
                 .AnyAsync(h =>
@@ -240,11 +251,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                     h.HoraInicio <= ahora.TimeOfDay &&
                     h.HoraFin > ahora.TimeOfDay);
 
-            // Verificar si una cita programada o en consulta
-            // ocupa el intervalo de la próxima consulta.
-            int duracion = medico.DuracionConsultaMin > 0
-                ? medico.DuracionConsultaMin
-                : 20;
+            int duracion = medico.DuracionConsultaMin > 0 ? medico.DuracionConsultaMin : 20;
 
             var citaOcupada = await _context.Cita
                 .Include(c => c.EstadoCita)
@@ -254,33 +261,26 @@ namespace Sistema_Gestión_Clinica.Controllers
                     c.FechaHora < ahora.AddMinutes(duracion) &&
                     c.FechaHora.AddMinutes(duracion) > ahora &&
                     c.EstadoCita != null &&
-                    (c.EstadoCita.NombreEstado == "Agendada" ||
-                     c.EstadoCita.NombreEstado == "En Consulta"));
+                    (c.EstadoCita.NombreEstado == "Agendada" || c.EstadoCita.NombreEstado == "En Consulta"));
 
             var estadoEnEspera = await _context.EstadoCita
                 .FirstOrDefaultAsync(e => e.NombreEstado == "En Espera");
 
             if (estadoEnEspera == null)
             {
-                TempData["Mensaje"] =
-                    "No se encontró el estado En Espera en la base de datos.";
-
+                TempData["Mensaje"] = "No se encontró el estado En Espera en la base de datos.";
                 await CargarMedicos();
                 return View();
             }
 
             if (tieneHorario && !citaOcupada)
             {
-                // Crear turno para el paciente que puede ingresar a la fila.
                 string codigoTurno;
-
                 do
                 {
-                    codigoTurno =
-                        $"W{ahora:HHmmss}{Random.Shared.Next(10, 99)}";
+                    codigoTurno = $"W{ahora:HHmmss}{Random.Shared.Next(10, 99)}";
                 }
-                while (await _context.Cita.AnyAsync(
-                    c => c.CodigoTurno == codigoTurno));
+                while (await _context.Cita.AnyAsync(c => c.CodigoTurno == codigoTurno));
 
                 var cita = new Cita
                 {
@@ -296,12 +296,10 @@ namespace Sistema_Gestión_Clinica.Controllers
                 _context.Cita.Add(cita);
                 await _context.SaveChangesAsync();
 
-                TempData["Mensaje"] =
-                    $"Llegada registrada. Turno asignado: {codigoTurno}. El paciente fue agregado a la fila de espera.";
+                TempData["Mensaje"] = $"Llegada registrada. Turno asignado: {codigoTurno}. El paciente fue agregado a la fila de espera.";
             }
             else
             {
-                // Sin disponibilidad inmediata: registrar solicitud pendiente.
                 var solicitud = new ListaEspera
                 {
                     IdPaciente = paciente.IdPaciente,
@@ -316,13 +314,10 @@ namespace Sistema_Gestión_Clinica.Controllers
                 _context.ListaEspera.Add(solicitud);
                 await _context.SaveChangesAsync();
 
-                TempData["Mensaje"] =
-                    "El paciente quedó registrado en la lista de espera porque no hay disponibilidad inmediata.";
+                TempData["Mensaje"] = "El paciente quedó registrado en la lista de espera porque no hay disponibilidad inmediata.";
             }
 
             return RedirectToAction(nameof(WalkIn));
         }
-
-
     }
 }

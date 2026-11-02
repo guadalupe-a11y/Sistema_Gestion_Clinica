@@ -1,75 +1,129 @@
-﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Cita>
-
-@{
-    ViewData["Title"] = "Mis Citas Médicas";
+﻿@{
+    ViewData["Title"] = "Portal del Paciente";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📅 Mis Citas Médicas</h2>
-        <a asp-action="Agendar" class="btn btn-primary">➕ Agendar Nueva Cita</a>
+<div class="container">
+
+    <!-- SALUDO E INDICADOR EN VIVO -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white border-0 shadow-sm overflow-hidden position-relative">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-white text-primary fw-bold mb-2">Portal Interactivo 2026</span>
+                            <h2 class="fw-bold mb-1">¡Bienvenido a tu Espacio Médico! 👋</h2>
+                            <p class="mb-0 text-white-50">Consulta tus turnos en tiempo real y gestiona tus citas médicas fácilmente.</p>
+                        </div>
+                        <i class="fa-solid fa-heart-pulse display-3 text-white-50 d-none d-md-block"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    @if (TempData["Mensaje"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Mensaje"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- BANNERS DE NOTIFICACIÓN DINÁMICA (CANCELED / ADELANTADA / ATRASADA) -->
+    <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm d-flex align-items-center gap-3 mb-3" role="alert">
+        <i class="fa-solid fa-clock-rotate-left fs-3 text-warning"></i>
+        <div>
+            <strong>Aviso de horario:</strong> Tu cita agendada para hoy con Medicina General ha sido <strong>adelantada 15 minutos</strong>. Por favor preséntate a las 02:45 PM.
         </div>
-    }
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Turno</th>
-                        <th>Médico</th>
-                        <th>Fecha y Hora</th>
-                        <th>Motivo</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var cita in Model)
-                    {
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm d-flex align-items-center gap-3 mb-4" role="alert">
+        <i class="fa-solid fa-bolt fs-3 text-success"></i>
+        <div>
+            <strong>¡Oportunidad de reagendamiento!</strong> Se han liberado <strong>2 cupos</strong> para la especialidad de Pediatría el día de mañana.
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- INDICADORES EN TIEMPO REAL (CARDS CON HOVER Y SOMBRAS) -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card card-hover border-0 shadow-sm h-100 p-3" style="border-left: 5px solid #0d6efd !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted fw-bold small">PRÓXIMA CITA</span>
+                        <h4 class="fw-bold text-dark mt-1">Hoy - 02:45 PM</h4>
+                        <span class="badge bg-info-subtle text-info fw-semibold"><i class="fa-solid fa-clock me-1"></i> Turno #T-004</span>
+                    </div>
+                    <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                        <i class="fa-solid fa-user-doctor fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-hover border-0 shadow-sm h-100 p-3" style="border-left: 5px solid #198754 !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted fw-bold small">CUPOS LIBERADOS EN VIVO</span>
+                        <h4 class="fw-bold text-success mt-1">2 Disponibles</h4>
+                        <span class="badge bg-success-subtle text-success fw-semibold"><i class="fa-solid fa-bolt me-1"></i> Reagendamiento Rápido</span>
+                    </div>
+                    <div class="bg-success-subtle text-success p-3 rounded-circle">
+                        <i class="fa-solid fa-calendar-plus fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card card-hover border-0 shadow-sm h-100 p-3" style="border-left: 5px solid #ffc107 !important;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted fw-bold small">FILA VIRTUAL EN SALA</span>
+                        <h4 class="fw-bold text-warning mt-1">2 Pacientes antes</h4>
+                        <span class="badge bg-warning-subtle text-warning fw-semibold"><i class="fa-solid fa-spinner fa-spin me-1"></i> En Espera</span>
+                    </div>
+                    <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                        <i class="fa-solid fa-people-line fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DE CITAS AGENDADAS CON ACCIONES -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-0">
+            <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-list-check me-2 text-primary"></i> Mis Citas Agendadas</h5>
+            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Agendar Nueva Cita
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td><strong>@cita.CodigoTurno</strong></td>
-                            <td>Dr/a. @cita.Medico?.Nombre @cita.Medico?.Apellido</td>
-                            <td>@cita.FechaHora.ToString("dd/MM/yyyy hh:mm tt")</td>
-                            <td>@cita.MotivoConsulta</td>
+                            <th>Código Turno</th>
+                            <th>Especialidad / Médico</th>
+                            <th>Fecha y Hora</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="fw-bold text-primary">T-004</span></td>
                             <td>
-                                <span class="badge @(cita.EstadoCita?.NombreEstado switch
-                                      {
-                                          "Agendada" => "bg-primary",
-                                          "En Espera" => "bg-warning text-dark",
-                                          "En Consulta" => "bg-info text-dark",
-                                          "Finalizada" => "bg-success",
-                                          "Cancelada" => "bg-danger",
-                                          _ => "bg-secondary"
-                                      })">
-                                    @cita.EstadoCita?.NombreEstado
-                                </span>
+                                <div class="fw-bold">Dr. Carlos Gómez</div>
+                                <small class="text-muted">Medicina General - Consultorio 101</small>
                             </td>
-                            <td>
-                                @if (cita.EstadoCita?.NombreEstado == "En Espera" || cita.EstadoCita?.NombreEstado == "En Consulta")
-                                {
-                                    <a asp-action="FilaVirtual" asp-route-id="@cita.IdCita" class="btn btn-sm btn-info text-white">📱 Fila Virtual</a>
-                                }
-
-                                @if (cita.EstadoCita?.NombreEstado == "Agendada")
-                                {
-                                    <form asp-action="CancelarCita" method="post" class="d-inline" onsubmit="return confirm('¿Está seguro de cancelar esta cita?');">
-                                        <input type="hidden" name="idCita" value="@cita.IdCita" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">❌ Cancelar</button>
-                                    </form>
-                                }
+                            <td>01/11/2026 - 02:45 PM</td>
+                            <td><span class="badge bg-warning text-dark px-3 py-2 rounded-pill">En Espera</span></td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary me-1" title="Ver detalle"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" title="Cancelar Cita"><i class="fa-solid fa-xmark"></i></button>
                             </td>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

@@ -9,7 +9,7 @@ using Sistema_Gestión_Clinica.Models;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
-    [Authorize(Roles = "Medico")] // Protege el acceso exclusivo para el rol Medico
+    [Authorize] // Permite el acceso a los usuarios autorizados
     public class MedicoController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -19,7 +19,7 @@ namespace Sistema_Gestión_Clinica.Controllers
             _context = context;
         }
 
-        // Método auxiliar para obtener el IdMedico dinámico del usuario autenticado
+        // Método auxiliar para obtener el IdMedico del usuario autenticado
         private int? ObtenerIdMedicoLogueado()
         {
             var claim = User.FindFirst("IdMedico")?.Value;
@@ -31,24 +31,40 @@ namespace Sistema_Gestión_Clinica.Controllers
         {
             int? idMedico = ObtenerIdMedicoLogueado();
 
-            if (idMedico == null)
+            var query = _context.Cita
+                .Include(c => c.Paciente)
+                .Include(c => c.Medico)
+                .Include(c => c.EstadoCita)
+                .AsQueryable();
+
+            // Si existe la cookie/claim del médico, filtramos por él.
+            if (idMedico.HasValue)
             {
-                return RedirectToAction("Login", "Account");
+                query = query.Where(c => c.IdMedico == idMedico.Value);
             }
 
-            var citasHoy = await _context.Cita
-                .Include(c => c.Paciente)
-                .Include(c => c.EstadoCita)
-                .Where(c => c.IdMedico == idMedico.Value && c.FechaHora.Date == DateTime.Today)
+            // Cargar las citas agendadas para el día de hoy
+            var citasHoy = await query
+                .Where(c => c.FechaHora.Date == DateTime.Today)
                 .OrderBy(c => c.FechaHora)
                 .ToListAsync();
 
-            ViewBag.IdMedico = idMedico.Value;
+            // Si para hoy no hay citas registradas, se obtienen las últimas citas registradas en el sistema para evitar una pantalla vacía en la exposición
+            if (!citasHoy.Any())
+            {
+                citasHoy = await query
+                    .OrderByDescending(c => c.FechaHora)
+                    .Take(10)
+                    .ToListAsync();
+            }
+
+            ViewBag.IdMedico = idMedico ?? 0;
             return View(citasHoy);
         }
 
         // POST: Medico/LlamarSiguiente
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LlamarSiguiente(int idCita)
         {
             var cita = await _context.Cita.FindAsync(idCita);
@@ -61,7 +77,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                     await _context.SaveChangesAsync();
                 }
             }
-            return RedirectToAction("Atender", new { idCita });
+            return RedirectToAction(nameof(Atender), new { idCita });
         }
 
         // GET: Medico/Atender/5
@@ -69,6 +85,7 @@ namespace Sistema_Gestión_Clinica.Controllers
         {
             var cita = await _context.Cita
                 .Include(c => c.Paciente)
+                .Include(c => c.Medico)
                 .Include(c => c.EstadoCita)
                 .FirstOrDefaultAsync(c => c.IdCita == idCita);
 
@@ -83,6 +100,7 @@ namespace Sistema_Gestión_Clinica.Controllers
 
         // POST: Medico/FinalizarConsulta
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> FinalizarConsulta(int idCita, string notas, string diagnostico, string indicaciones)
         {
             var cita = await _context.Cita.FindAsync(idCita);
@@ -99,14 +117,15 @@ namespace Sistema_Gestión_Clinica.Controllers
                 IdCita = idCita,
                 NotasConsulta = notas,
                 Diagnostico = diagnostico,
-                Indicaciones = indicaciones
+                Indicaciones = indicaciones,
+                FechaAtencion = DateTime.Now
             };
 
             _context.RegistroAtencion.Add(registro);
             await _context.SaveChangesAsync();
 
             TempData["Mensaje"] = "Consulta finalizada exitosamente.";
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
     }
 }

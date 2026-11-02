@@ -1,104 +1,94 @@
-﻿@model Sistema_Gestión_Clinica.ViewModels.IndicadoresViewModel
-
-@{
-    ViewData["Title"] = "Vista de Indicadores";
+﻿@{
+    ViewData["Title"] = "Panel de Indicadores";
 }
 
-<div class="container mt-4">
-
-    <div class="mb-4">
-        <h2>Panel de Indicadores de Recepción</h2>
-
-        <p class="text-muted">
-            Resumen de citas del día:
-            <strong>
-                @Model.Fecha.ToString("dd/MM/yyyy")
-            </strong>
-        </p>
-    </div>
-
-    <div class="row g-3">
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-primary h-100">
-                <div class="card-body text-center">
-                    <h5>Total de citas del día</h5>
-                    <h1 class="text-primary">
-                        @Model.TotalCitas
-                    </h1>
-                </div>
-            </div>
+<div class="container animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Panel de Indicadores de Recepción</h2>
+            <p class="text-muted mb-0">Haz clic en cualquier indicador para ver el detalle de pacientes y citas del día.</p>
         </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-warning h-100">
-                <div class="card-body text-center">
-                    <h5>Citas pendientes</h5>
-                    <h1 class="text-warning">
-                        @Model.CitasPendientes
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-info h-100">
-                <div class="card-body text-center">
-                    <h5>Pacientes en espera</h5>
-                    <h1 class="text-info">
-                        @Model.PacientesEnEspera
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-success h-100">
-                <div class="card-body text-center">
-                    <h5>Citas finalizadas</h5>
-                    <h1 class="text-success">
-                        @Model.CitasFinalizadas
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-danger h-100">
-                <div class="card-body text-center">
-                    <h5>Citas canceladas</h5>
-                    <h1 class="text-danger">
-                        @Model.CitasCanceladas
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card shadow-sm border-secondary h-100">
-                <div class="card-body text-center">
-                    <h5>Pacientes no presentados</h5>
-                    <h1 class="text-secondary">
-                        @Model.PacientesNoPresentados
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="mt-4">
-        <a asp-controller="Recepcion"
-           asp-action="Index"
-           class="btn btn-outline-primary">
-            Volver a Recepción
-        </a>
-
-        <a asp-controller="Indicadores"
-           asp-action="Index"
-           class="btn btn-primary">
-            Actualizar indicadores
+        <a asp-controller="Indicadores" asp-action="Index" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fa-solid fa-rotate me-1"></i> Actualizar Indicadores
         </a>
     </div>
 
+    <!-- TARJETAS CON ENLACES DINÁMICOS DE FILTRADO -->
+    <div class="row g-4 mb-4">
+
+        <!-- Total de Citas -->
+        <div class="col-md-4">
+            <a asp-controller="Recepcion" asp-action="Index" asp-route-estado="Todas" class="text-decoration-none">
+                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100">
+                    <div class="text-primary mb-2"><i class="fa-solid fa-calendar-check fs-1"></i></div>
+                    <h6 class="text-muted fw-bold">TOTAL CITAS DEL DÍA</h6>
+                    <h1 class="fw-bold text-primary display-4 mb-0">12</h1>
+                    <small class="text-primary mt-2 d-block">Ver todas <i class="fa-solid fa-arrow-right"></i></small>
+                </div>
+            </a>
+        </div>
+
+        <!-- Citas Pendientes -->
+        <div class="col-md-4">
+            <a asp-controller="Recepcion" asp-action="Index" asp-route-estado="Agendada" class="text-decoration-none">
+                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100" style="border-top: 4px solid #ffc107 !important;">
+                    <div class="text-warning mb-2"><i class="fa-solid fa-hourglass-half fs-1"></i></div>
+                    <h6 class="text-muted fw-bold">CITAS PENDIENTES</h6>
+                    <h1 class="fw-bold text-warning display-4 mb-0">4</h1>
+                    <small class="text-warning mt-2 d-block">Ver pendientes <i class="fa-solid fa-arrow-right"></i></small>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pacientes en Espera (Fila Virtual) -->
+        <div class="col-md-4">
+            <a asp-controller="Recepcion" asp-action="Index" asp-route-estado="En Espera" class="text-decoration-none">
+                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100" style="border-top: 4px solid #0dcaf0 !important;">
+                    <div class="text-info mb-2"><i class="fa-solid fa-user-clock fs-1"></i></div>
+                    <h6 class="text-muted fw-bold">PACIENTES EN ESPERA</h6>
+                    <h1 class="fw-bold text-info display-4 mb-0">3</h1>
+                    <small class="text-info mt-2 d-block">Ver en sala <i class="fa-solid fa-arrow-right"></i></small>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Citas Finalizadas + Acceso a Expediente -->
+        <div class="col-md-4">
+            <a asp-controller="Recepcion" asp-action="Index" asp-route-estado="Finalizada" class="text-decoration-none">
+                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100" style="border-top: 4px solid #198754 !important;">
+                    <div class="text-success mb-2"><i class="fa-solid fa-circle-check fs-1"></i></div>
+                    <h6 class="text-muted fw-bold">CITAS FINALIZADAS</h6>
+                    <h1 class="fw-bold text-success display-4 mb-0">7</h1>
+                    <small class="text-success mt-2 d-block">Ver finalizadas e historial <i class="fa-solid fa-arrow-right"></i></small>
+                </div>
+            </a>
+        </div>
+
+        <!-- Citas Canceladas -->
+        <div class="col-md-4">
+            <a asp-controller="Recepcion" asp-action="Index" asp-route-estado="Cancelada" class="text-decoration-none">
+                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100" style="border-top: 4px solid #dc3545 !important;">
+                    <div class="text-danger mb-2"><i class="fa-solid fa-ban fs-1"></i></div>
+                    <h6 class="text-muted fw-bold">CITAS CANCELADAS</h6>
+                    <h1 class="fw-bold text-danger display-4 mb-0">1</h1>
+                    <small class="text-danger mt-2 d-block">Ver cancelaciones <i class="fa-solid fa-arrow-right"></i></small>
+                </div>
+            </a>
+        </div>
+
+        <!-- Pacientes No Presentados -->
+        <div class="col-md-4">
+            <a asp-controller="Recepcion" asp-action="Index" asp-route-estado="No Presentado" class="text-decoration-none">
+                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100">
+                    <div class="text-secondary mb-2"><i class="fa-solid fa-user-slash fs-1"></i></div>
+                    <h6 class="text-muted fw-bold">PACIENTES NO PRESENTADOS</h6>
+                    <h1 class="fw-bold text-secondary display-4 mb-0">0</h1>
+                    <small class="text-secondary mt-2 d-block">Ver registros <i class="fa-solid fa-arrow-right"></i></small>
+                </div>
+            </a>
+        </div>
+    </div>
 </div>

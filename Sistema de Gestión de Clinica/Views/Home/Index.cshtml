@@ -1,8 +1,61 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Bienvenido";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container animate-up">
+    <!-- HERO SECTION -->
+    <div class="p-5 mb-4 bg-white rounded-4 shadow-sm border text-center position-relative overflow-hidden">
+        <div class="py-4">
+            <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-3">
+                <i class="fa-solid fa-star me-1"></i> Sistema de Gestión Médica 2026
+            </span>
+            <h1 class="display-4 fw-bold text-dark mb-3">Bienvenido a Clínica Médica</h1>
+            <p class="col-md-8 mx-auto fs-5 text-muted mb-4">
+                Plataforma integral para la gestión de citas, atención a pacientes, expediente clínico y optimización de turnos en tiempo real.
+            </p>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold shadow">
+                    Comenzar Ahora <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- CARDS INTERACTIVAS -->
+    <div class="row g-4 mt-2">
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-3 p-3 me-3">
+                        <i class="fa-solid fa-calendar-day fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Gestión de Citas</h5>
+                </div>
+                <p class="text-muted">Reserva y control de horarios en tiempo real para pacientes y médicos.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-info text-white rounded-3 p-3 me-3">
+                        <i class="fa-solid fa-hospital-user fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Fila Virtual</h5>
+                </div>
+                <p class="text-muted">Reasignación automática y gestión inteligente de listas de espera.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-3 p-3 me-3">
+                        <i class="fa-solid fa-file-medical fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Expediente Clínico</h5>
+                </div>
+                <p class="text-muted">Historial de diagnósticos y registros de atención completamente centralizado.</p>
+            </div>
+        </div>
+    </div>
 </div>
