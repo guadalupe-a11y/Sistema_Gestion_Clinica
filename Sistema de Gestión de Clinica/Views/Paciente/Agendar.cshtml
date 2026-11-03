@@ -11,7 +11,7 @@
 
 <form asp-action="Agendar" method="post">
     <div class="mb-3">
-        <label asp-for="IdEspecialidad"></label>
+        <label>Especialidad</label>
         <select asp-for="IdEspecialidad" id="IdEspecialidad" class="form-control">
             <option value="">-- Seleccione --</option>
             @foreach (var e in especialidades)
@@ -23,12 +23,12 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="IdMedico"></label>
+        <label>Médico</label>
         <select asp-for="IdMedico" id="IdMedico" class="form-control">
             <option value="">-- Seleccione --</option>
             @foreach (var m in medicos)
             {
-                <option value="@m.IdMedico" data-esp="@m.IdEspecialidad">@m.Nombre</option>
+                <option value="@m.IdMedico" data-esp="@m.IdEspecialidad">@m.Nombre @m.Apellido</option>
             }
         </select>
         <span asp-validation-for="IdMedico" class="text-danger"></span>
@@ -36,39 +36,46 @@
 
     <div class="mb-3">
         <label asp-for="Fecha"></label>
-        <input asp-for="Fecha" type="date" class="form-control" />
+        <input asp-for="Fecha" id="Fecha" type="date" class="form-control" />
         <span asp-validation-for="Fecha" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Hora"></label>
-        <select asp-for="Hora" class="form-control">
+        <label>Hora</label>
+        <select asp-for="Hora" id="Hora" class="form-control">
             <option value="">-- Seleccione --</option>
-            <option value="08:00">08:00 AM</option>
-            <option value="08:30">08:30 AM</option>
-            <option value="09:00">09:00 AM</option>
-            <option value="09:30">09:30 AM</option>
-            <option value="10:00">10:00 AM</option>
-            <option value="10:30">10:30 AM</option>
-            <option value="11:00">11:00 AM</option>
-            <option value="11:30">11:30 AM</option>
-            <option value="12:00">12:00 PM</option>
-            <option value="12:30">12:30 PM</option>
-            <option value="13:00">01:00 PM</option>
-            <option value="13:30">01:30 PM</option>
-            <option value="14:00">02:00 PM</option>
-            <option value="14:30">02:30 PM</option>
-            <option value="15:00">03:00 PM</option>
-            <option value="15:30">03:30 PM</option>
-            <option value="16:00">04:00 PM</option>
-            <option value="16:30">04:30 PM</option>
-            <option value="17:00">05:00 PM</option>
-            <option value="17:30">05:30 PM</option>
-            <option value="18:00">06:00 PM</option>
-            <option value="18:30">06:30 PM</option>
-            <option value="19:00">07:00 PM</option>
-            <option value="19:30">07:30 PM</option>
-            <option value="20:00">08:00 PM</option>
+            <optgroup label="Turno Dia - 08:00 a 15:30">
+                <option value="08:00">08:00 AM</option>
+                <option value="08:30">08:30 AM</option>
+                <option value="09:00">09:00 AM</option>
+                <option value="09:30">09:30 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="13:00">01:00 PM</option>
+                <option value="13:30">01:30 PM</option>
+                <option value="14:00">02:00 PM</option>
+                <option value="14:30">02:30 PM</option>
+                <option value="15:00">03:00 PM</option>
+                <option value="15:30">03:30 PM</option>
+            </optgroup>
+            <optgroup label="Turno Noche - 16:00 a 21:30">
+                <option value="16:00">04:00 PM</option>
+                <option value="16:30">04:30 PM</option>
+                <option value="17:00">05:00 PM</option>
+                <option value="17:30">05:30 PM</option>
+                <option value="18:00">06:00 PM</option>
+                <option value="18:30">06:30 PM</option>
+                <option value="19:00">07:00 PM</option>
+                <option value="19:30">07:30 PM</option>
+                <option value="20:00">08:00 PM</option>
+                <option value="20:30">08:30 PM</option>
+                <option value="21:00">09:00 PM</option>
+                <option value="21:30">09:30 PM</option>
+            </optgroup>
         </select>
         <span asp-validation-for="Hora" class="text-danger"></span>
     </div>
