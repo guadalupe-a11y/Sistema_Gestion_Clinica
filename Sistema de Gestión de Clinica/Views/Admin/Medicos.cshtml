@@ -1,21 +1,22 @@
-﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Medico>
-
+﻿@model Sistema_Gestión_Clinica.ViewModels.MedicosViewModel
 @{
-    ViewData["Title"] = "Gestión de Médicos";
+    ViewData["Title"] = "Plantilla Médica";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>👨‍⚕️ Plantilla Médica</h2>
-        <button class="btn btn-success" disabled>➕ Registrar Médico</button>
+        <h2 class="fw-bold text-dark mb-0">🧑‍⚕️ Plantilla Médica</h2>
+        <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMedico">
+            <i class="bi bi-plus-lg me-1"></i> Registrar Médico
+        </button>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-striped align-middle">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
+                        <th class="ps-4">ID</th>
                         <th>Nombre Completo</th>
                         <th>Especialidad</th>
                         <th>Consultorio</th>
@@ -23,18 +24,88 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var medico in Model)
+                    @if (Model.Medicos != null && Model.Medicos.Any())
+                    {
+                        foreach (var m in Model.Medicos)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-secondary">@m.IdMedico</td>
+                                <td>Dr/a. @m.Nombre @m.Apellido</td>
+                                <td>@(m.Especialidad?.NombreEspecialidad ?? "General")</td>
+                                <td>Consultorio @(m.Consultorio?.NumeroConsultorio ?? m.IdConsultorio.ToString())</td>
+                                <td>@m.DuracionConsultaMinutos min</td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@medico.IdMedico</td>
-                            <td>Dr/a. @medico.Nombre @medico.Apellido</td>
-                            <td>@medico.Especialidad?.NombreEspecialidad</td>
-                            <td>@medico.Consultorio?.NombreConsultorio</td>
-                            <td>@medico.DuracionConsultaMin min</td>
+                            <td colspan="5" class="text-center py-4 text-muted">No hay médicos registrados actualmente.</td>
                         </tr>
                     }
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registrar Médico -->
+<div class="modal fade" id="modalMedico" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header bg-success text-white rounded-top-4">
+                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Médico</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="RegistrarMedico" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nombre</label>
+                        <input type="text" name="nombre" class="form-control rounded-3" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Apellido</label>
+                        <input type="text" name="apellido" class="form-control rounded-3" required />
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Especialidad</label>
+                            @if (Model.Especialidades.Any())
+                            {
+                                <select name="idEspecialidad" class="form-select rounded-3" asp-items="Model.Especialidades" required>
+                                    <option value="">-- Seleccionar --</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <input type="number" name="idEspecialidad" class="form-control rounded-3" value="1" placeholder="ID Especialidad" required />
+                            }
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Consultorio</label>
+                            @if (Model.Consultorios.Any())
+                            {
+                                <select name="idConsultorio" class="form-select rounded-3" asp-items="Model.Consultorios" required>
+                                    <option value="">-- Seleccionar --</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <input type="number" name="idConsultorio" class="form-control rounded-3" value="101" placeholder="ID Consultorio" required />
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Duración de Consulta (Minutos)</label>
+                        <input type="number" name="duracionConsulta" value="20" class="form-control rounded-3" required />
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4">Guardar Médico</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

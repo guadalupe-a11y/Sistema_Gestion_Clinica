@@ -23,5 +23,6 @@ namespace Sistema_Gestión_Clinica.ViewModels
 
         [Required(ErrorMessage = "El teléfono es obligatorio.")]
         public string Telefono { get; set; } = string.Empty;
+        public string Contrasena { get; internal set; }
     }
 }

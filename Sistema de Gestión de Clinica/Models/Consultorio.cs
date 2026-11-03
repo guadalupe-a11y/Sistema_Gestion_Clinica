@@ -6,6 +6,8 @@ namespace Sistema_Gestión_Clinica.Models
     [Table("Consultorio")]
     public class Consultorio
     {
+        internal string? NumeroConsultorio;
+
         [Key]
         public int IdConsultorio { get; set; }
 

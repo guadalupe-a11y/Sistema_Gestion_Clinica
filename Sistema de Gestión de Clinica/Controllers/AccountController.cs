@@ -21,6 +21,13 @@ namespace Sistema_Gestión_Clinica.Controllers
             _passwordHasher = new PasswordHasher<Usuario>();
         }
 
+        // Redirección directa desde la pantalla principal al presionar "Comenzar Ahora"
+        [HttpGet]
+        public IActionResult Comenzar()
+        {
+            return RedirectToAction("Login");
+        }
+
         [HttpGet]
         public IActionResult Login() => View();
 
@@ -119,6 +126,7 @@ namespace Sistema_Gestión_Clinica.Controllers
         public IActionResult Register() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
@@ -146,8 +154,8 @@ namespace Sistema_Gestión_Clinica.Controllers
                 Activo = true
             };
 
-            // Encriptación usando model.Contrasena
-            nuevoUsuario.PasswordHash = _passwordHasher.HashPassword(nuevoUsuario, model.Password);
+            // CORRECCIÓN AQUÍ: Se utiliza model.Contrasena en lugar de model.Password
+            nuevoUsuario.PasswordHash = _passwordHasher.HashPassword(nuevoUsuario, model.Contrasena);
 
             _context.Usuario.Add(nuevoUsuario);
             await _context.SaveChangesAsync();
@@ -173,6 +181,8 @@ namespace Sistema_Gestión_Clinica.Controllers
             _context.Expediente.Add(expediente);
             await _context.SaveChangesAsync();
 
+            // Guardado exitoso y redirección al inicio de sesión
+            TempData["SuccessMessage"] = "Registro realizado exitosamente. Ya puedes iniciar sesión.";
             return RedirectToAction("Login");
         }
 

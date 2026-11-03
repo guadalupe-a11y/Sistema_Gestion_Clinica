@@ -9,7 +9,7 @@ using Sistema_Gestión_Clinica.Models;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
-    [Authorize] // Permite el acceso a los usuarios autorizados
+    [Authorize(Roles = "Medico,Administrador")] // Permite el acceso únicamente a Médicos y Administradores
     public class MedicoController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -19,7 +19,7 @@ namespace Sistema_Gestión_Clinica.Controllers
             _context = context;
         }
 
-        // Método auxiliar para obtener el IdMedico del usuario autenticado
+        // Método auxiliar para obtener el IdMedico del usuario autenticado a partir de sus Claims
         private int? ObtenerIdMedicoLogueado()
         {
             var claim = User.FindFirst("IdMedico")?.Value;
@@ -37,7 +37,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                 .Include(c => c.EstadoCita)
                 .AsQueryable();
 
-            // Si existe la cookie/claim del médico, filtramos por él.
+            // Si existe el Claim del médico logueado, se filtran las citas por él
             if (idMedico.HasValue)
             {
                 query = query.Where(c => c.IdMedico == idMedico.Value);
@@ -49,7 +49,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                 .OrderBy(c => c.FechaHora)
                 .ToListAsync();
 
-            // Si para hoy no hay citas registradas, se obtienen las últimas citas registradas en el sistema para evitar una pantalla vacía en la exposición
+            // Si para hoy no hay citas registradas, se obtienen las últimas 10 registradas para demostración
             if (!citasHoy.Any())
             {
                 citasHoy = await query
@@ -70,13 +70,16 @@ namespace Sistema_Gestión_Clinica.Controllers
             var cita = await _context.Cita.FindAsync(idCita);
             if (cita != null)
             {
-                var estadoEnConsulta = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "En Consulta");
+                var estadoEnConsulta = await _context.EstadoCita
+                    .FirstOrDefaultAsync(e => e.NombreEstado == "En Consulta");
+
                 if (estadoEnConsulta != null)
                 {
                     cita.IdEstadoCita = estadoEnConsulta.IdEstadoCita;
                     await _context.SaveChangesAsync();
                 }
             }
+
             return RedirectToAction(nameof(Atender), new { idCita });
         }
 
@@ -91,6 +94,7 @@ namespace Sistema_Gestión_Clinica.Controllers
 
             if (cita == null) return NotFound();
 
+            // Obtener el expediente del paciente vinculado
             var expediente = await _context.Expediente
                 .FirstOrDefaultAsync(e => e.IdPaciente == cita.IdPaciente);
 
@@ -106,15 +110,24 @@ namespace Sistema_Gestión_Clinica.Controllers
             var cita = await _context.Cita.FindAsync(idCita);
             if (cita == null) return NotFound();
 
-            var estadoFinalizada = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Finalizada");
+            // 1. Cambiar el estado de la cita a "Finalizada"
+            var estadoFinalizada = await _context.EstadoCita
+                .FirstOrDefaultAsync(e => e.NombreEstado == "Finalizada");
+
             if (estadoFinalizada != null)
             {
                 cita.IdEstadoCita = estadoFinalizada.IdEstadoCita;
             }
 
+            // 2. Buscar expediente del paciente para asociar la atención
+            var expediente = await _context.Expediente
+                .FirstOrDefaultAsync(e => e.IdPaciente == cita.IdPaciente);
+
+            // 3. Crear el registro de la consulta médica
             var registro = new RegistroAtencion
             {
                 IdCita = idCita,
+                IdExpediente = expediente?.IdExpediente ?? 0, // Asigna el IdExpediente si existe
                 NotasConsulta = notas,
                 Diagnostico = diagnostico,
                 Indicaciones = indicaciones,

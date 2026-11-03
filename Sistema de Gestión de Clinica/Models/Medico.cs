@@ -7,6 +7,8 @@ namespace Sistema_Gestión_Clinica.Models
     [Table("Medico")]
     public class Medico
     {
+        internal object? DuracionConsultaMinutos;
+
         [Key]
         public int IdMedico { get; set; }
 

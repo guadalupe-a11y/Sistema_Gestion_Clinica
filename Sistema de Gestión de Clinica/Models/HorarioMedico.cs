@@ -26,6 +26,7 @@ namespace Sistema_Gestión_Clinica.Models
         // Propiedad de navegación
         [ForeignKey("IdMedico")]
         public virtual Medico? Medico { get; set; }
+
     }
 }
 
