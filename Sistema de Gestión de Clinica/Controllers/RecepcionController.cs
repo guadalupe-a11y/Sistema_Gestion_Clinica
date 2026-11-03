@@ -16,20 +16,29 @@ namespace Sistema_Gestión_Clinica.Controllers
             _context = context;
         }
 
-        // GET: Recepcion/Index?estado=Agendada
-        public async Task<IActionResult> Index(string? estado)
+
+        // GET: Recepcion/Index?estado=Todas&fecha=2026-11-02
+        public async Task<IActionResult> Index(string? estado, DateTime? fecha)
         {
+            // Por defecto se muestran las citas del día actual.
+            DateTime fechaSeleccionada = fecha?.Date ?? DateTime.Today;
+            DateTime fechaSiguiente = fechaSeleccionada.AddDays(1);
+
             var query = _context.Cita
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
+                    .ThenInclude(m => m.Especialidad)
                 .Include(c => c.EstadoCita)
-                .Where(c => c.FechaHora.Date == DateTime.Today)
-                .AsQueryable();
+                .Where(c =>
+                    c.FechaHora >= fechaSeleccionada &&
+                    c.FechaHora < fechaSiguiente);
 
-            // Filtrado dinámico por estado de la cita
+            // Filtrar por estado cuando se seleccione uno.
             if (!string.IsNullOrEmpty(estado) && estado != "Todas")
             {
-                query = query.Where(c => c.EstadoCita != null && c.EstadoCita.NombreEstado == estado);
+                query = query.Where(c =>
+                    c.EstadoCita != null &&
+                    c.EstadoCita.NombreEstado == estado);
             }
 
             var citas = await query
@@ -37,9 +46,11 @@ namespace Sistema_Gestión_Clinica.Controllers
                 .ToListAsync();
 
             ViewBag.EstadoFiltro = estado ?? "Todas";
+            ViewBag.FechaFiltro = fechaSeleccionada.ToString("yyyy-MM-dd");
 
             return View(citas);
         }
+
 
         // GET: Recepcion/VerExpediente/5
         public async Task<IActionResult> VerExpediente(int idPaciente)
