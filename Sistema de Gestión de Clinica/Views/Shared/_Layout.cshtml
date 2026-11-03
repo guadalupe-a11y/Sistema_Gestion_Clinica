@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="bg-light">
+<body class="bg-light d-flex flex-column min-vh-100">
 
     <!-- BARRA SUPERIOR (HEADER GLOBAL) -->
     <header class="sticky-top navbar-custom shadow-sm text-white">
@@ -177,11 +177,18 @@
     }
 
     <!-- CONTENIDO DINÁMICO DE LAS VISTAS -->
-    <div class="container py-4">
+    <div class="container py-4 flex-grow-1">
         <main role="main" class="animate__animated animate__fadeIn">
             @RenderBody()
         </main>
     </div>
+
+    <!-- PIE DE PÁGINA (FOOTER CON DERECHOS RESERVADOS) -->
+    <footer class="footer mt-auto py-3 bg-dark text-white text-center border-top border-secondary">
+        <div class="container">
+            <span class="small">&copy; @DateTime.Now.Year - Sistema de Gestión Clínica. Todos los derechos reservados.</span>
+        </div>
+    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
