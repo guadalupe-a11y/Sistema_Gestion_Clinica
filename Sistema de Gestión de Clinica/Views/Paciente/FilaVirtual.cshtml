@@ -7,32 +7,161 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6 text-center">
+
             <div class="card shadow-lg border-0 rounded-lg">
+
                 <div class="card-header bg-primary text-white py-3">
-                    <h4 class="mb-0">📱 Fila Virtual en Tiempo Real</h4>
+                    <h4 class="mb-0">
+                        📱 Fila Virtual
+                    </h4>
                 </div>
+
                 <div class="card-body p-4">
-                    <h6 class="text-muted mb-3">Atención con: <strong>@Model.NombreMedico</strong></h6>
+
+                    <h6 class="text-muted mb-3">
+                        Atención con:
+                        <strong>@Model.NombreMedico</strong>
+                    </h6>
 
                     <div class="my-4">
-                        <span class="display-1 fw-bold text-primary">@Model.PacientesAdelante</span>
-                        <p class="text-secondary fs-5">pacientes delante de ti</p>
+                        <span id="pacientesAdelante"
+                              class="display-1 fw-bold text-primary">
+                            @Model.PacientesAdelante
+                        </span>
+
+                        <p class="text-secondary fs-5">
+                            pacientes delante de ti
+                        </p>
                     </div>
 
                     <div class="alert alert-info py-3 mb-4">
-                        <h5 class="alert-heading mb-1">⏱️ Tiempo Estimado de Espera</h5>
-                        <span class="fs-3 fw-bold">~ @Model.TiempoEstimadoMinutos min</span>
-                    </div>
+                        <h5 class="alert-heading mb-1">
+                            ⏱️ Tiempo Estimado de Espera
+                        </h5>
 
-                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                        <span class="text-muted">Estado actual del turno:</span>
-                        <span class="badge bg-success fs-6">@Model.EstadoActual</span>
-                    </div>
+                        <span class="fs-3 fw-bold">
+                            ~ <span id="tiempoEstimado">
+                            @Model.TiempoEstimadoMinutos
+                        </span> min
+                    </span>
                 </div>
-                <div class="card-footer bg-light py-3">
-                    <small class="text-muted">Esta pantalla se actualiza con el flujo de llamadas de la clínica.</small>
+
+                <div class="d-flex justify-content-between
+                    align-items-center border-top pt-3">
+
+                    <span class="text-muted">
+                        Estado actual del turno:
+                    </span>
+
+                    <span id="estadoTurno"
+                          class="badge bg-success fs-6">
+                        @Model.EstadoActual
+                    </span>
                 </div>
+
+            </div>
+
+            <div class="card-footer bg-light py-3">
+
+                <small class="text-muted">
+                    Actualización automática cada 5 segundos.
+                </small>
+
+                <div id="estadoActualizacionFila"
+                     class="small text-muted mt-2"
+                     role="status">
+                    Esperando actualización...
+                </div>
+
             </div>
         </div>
+
     </div>
 </div>
+</div>
+
+@section Scripts {
+    <script>
+        const idCita = @Model.IdCita;
+
+        const urlFila = '@Url.Action("ObtenerFilaVirtual", "Paciente")'
+            + '?id=' + encodeURIComponent(idCita);
+
+        let consultandoFila = false;
+
+        async function actualizarFilaVirtual() {
+            if (consultandoFila) return;
+
+            consultandoFila = true;
+
+            try {
+                const respuesta = await fetch(urlFila, {
+                    cache: "no-store"
+                });
+
+                if (!respuesta.ok) {
+                    throw new Error(
+                        "No fue posible consultar la fila virtual."
+                    );
+                }
+
+                const datos = await respuesta.json();
+
+                document.getElementById("pacientesAdelante")
+                    .textContent = datos.pacientesAdelante;
+
+                document.getElementById("tiempoEstimado")
+                    .textContent = datos.tiempoEstimadoMinutos;
+
+                const estado = document.getElementById("estadoTurno");
+
+                estado.textContent = datos.estadoActual;
+                estado.className = "badge fs-6 ";
+
+                switch (datos.estadoActual) {
+                    case "En Espera":
+                        estado.className += "bg-warning text-dark";
+                        break;
+
+                    case "En Consulta":
+                        estado.className += "bg-info text-dark";
+                        break;
+
+                    case "Finalizada":
+                        estado.className += "bg-success";
+                        break;
+
+                    case "Cancelada":
+                        estado.className += "bg-danger";
+                        break;
+
+                    case "No-Show":
+                        estado.className += "bg-secondary";
+                        break;
+
+                    default:
+                        estado.className += "bg-primary";
+                }
+
+                document.getElementById("estadoActualizacionFila")
+                    .textContent =
+                    "Última actualización: " +
+                    new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error(error);
+
+                document.getElementById("estadoActualizacionFila")
+                    .textContent =
+                    "Error al actualizar. Se intentará nuevamente.";
+
+            } finally {
+                consultandoFila = false;
+            }
+        }
+
+        actualizarFilaVirtual();
+
+        setInterval(actualizarFilaVirtual, 5000);
+    </script>
+}

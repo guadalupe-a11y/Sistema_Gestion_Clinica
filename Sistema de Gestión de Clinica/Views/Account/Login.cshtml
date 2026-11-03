@@ -1,36 +1,237 @@
 ﻿@model Sistema_Gestión_Clinica.ViewModels.LoginViewModel
 
 @{
-    ViewData["Title"] = "Iniciar Sesión";
+    ViewData["Title"] = "Iniciar sesión";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0">🏥 Inicio de Sesión</h4>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Login" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<style>
+    /* CONTENEDOR DEL LOGIN */
+    .login-modern-page {
+        width: 100%;
+        max-width: 540px;
+        margin: 25px auto 35px;
+        padding: 22px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient( 135deg, #edf4ff 0%, #e8f9fc 100% );
+        border-radius: 24px;
+    }
 
-                        <div class="mb-3">
-                            <label class="form-label">Correo Electrónico</label>
-                            <input asp-for="Correo" class="form-control" placeholder="correo@ejemplo.com" required />
-                            <span asp-validation-for="Correo" class="text-danger"></span>
-                        </div>
+    /* TARJETA BLANCA */
+    .login-modern-card {
+        width: 100%;
+        max-width: 470px;
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 30px 32px;
+        box-shadow: 0 12px 35px rgba(21, 63, 110, 0.12);
+    }
 
-                        <div class="mb-3">
-                            <label class="form-label">Contraseña</label>
-                            <input asp-for="Contrasena" type="password" class="form-control" placeholder="••••••••" required />
-                            <span asp-validation-for="Contrasena" class="text-danger"></span>
-                        </div>
+    /* ICONO SUPERIOR */
+    .login-modern-icon {
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 14px;
+        background: #e8f6ff;
+        border-radius: 18px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #0798cf;
+        font-size: 28px;
+    }
 
-                        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
-                    </form>
-                </div>
+    /* TITULO */
+    .login-modern-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    /* SUBTITULO */
+    .login-modern-subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    /* ETIQUETAS */
+    .login-modern-card .form-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    /* CAMPOS DE TEXTO */
+    .login-modern-card .form-control {
+        height: 49px;
+        border-radius: 11px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        font-size: 15px;
+    }
+
+        .login-modern-card .form-control:focus {
+            border-color: #0d83e9;
+            box-shadow: 0 0 0 3px rgba(13, 131, 233, 0.12);
+        }
+
+    /* BOTON DE INGRESO */
+    .login-modern-button {
+        width: 100%;
+        height: 49px;
+        border: none;
+        border-radius: 11px;
+        background: linear-gradient( 90deg, #1676ef, #05b1d1 );
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        transition: opacity 0.2s ease;
+    }
+
+        .login-modern-button:hover {
+            opacity: 0.92;
+        }
+
+    /* ENLACE DE REGISTRO */
+    .login-modern-register {
+        margin-top: 22px;
+        font-size: 14px;
+        color: #64748b;
+        text-align: center;
+    }
+
+        .login-modern-register a {
+            color: #0876e5;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+            .login-modern-register a:hover {
+                text-decoration: underline;
+            }
+
+    /* DISEÑO PARA CELULARES */
+    @@media (max-width: 576px) {
+
+        .login-modern-page {
+            margin: 15px auto 25px;
+            padding: 12px;
+        }
+
+        .login-modern-card {
+            padding: 25px 20px;
+        }
+
+        .login-modern-title {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="login-modern-page">
+
+    <!-- TARJETA DEL LOGIN -->
+    <div class="login-modern-card">
+
+        <!-- ICONO Y TITULO -->
+        <div class="text-center">
+
+            <div class="login-modern-icon">
+                <i class="fa-solid fa-hospital"></i>
             </div>
+
+            <h2 class="login-modern-title">
+                Bienvenido
+            </h2>
+
+            <p class="login-modern-subtitle">
+                Ingresa a tu cuenta de Clínica Médica
+            </p>
+
         </div>
+
+        <!-- FORMULARIO -->
+        <form asp-controller="Account"
+              asp-action="Login"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger small mb-3">
+            </div>
+
+            <!-- CORREO ELECTRONICO -->
+            <div class="mb-3">
+
+                <label asp-for="Correo"
+                       class="form-label">
+                    Correo electrónico
+                </label>
+
+                <input asp-for="Correo"
+                       type="email"
+                       class="form-control"
+                       placeholder="correo@ejemplo.com"
+                       autocomplete="username" />
+
+                <span asp-validation-for="Correo"
+                      class="text-danger small">
+                </span>
+
+            </div>
+
+            <!-- CONTRASEÑA -->
+            <div class="mb-4">
+
+                <label asp-for="Contrasena"
+                       class="form-label">
+                    Contraseña
+                </label>
+
+                <input asp-for="Contrasena"
+                       type="password"
+                       class="form-control"
+                       placeholder="Ingresa tu contraseña"
+                       autocomplete="current-password" />
+
+                <span asp-validation-for="Contrasena"
+                      class="text-danger small">
+                </span>
+
+            </div>
+
+            <!-- BOTON INICIAR SESION -->
+            <button type="submit"
+                    class="login-modern-button">
+
+                <i class="fa-solid fa-right-to-bracket me-2"></i>
+                Iniciar sesión
+
+            </button>
+
+        </form>
+
+        <!-- REGISTRAR CUENTA -->
+        <div class="login-modern-register">
+
+            ¿No tienes una cuenta?
+
+            <a asp-controller="Account"
+               asp-action="Register">
+                Regístrate aquí
+            </a>
+
+        </div>
+
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

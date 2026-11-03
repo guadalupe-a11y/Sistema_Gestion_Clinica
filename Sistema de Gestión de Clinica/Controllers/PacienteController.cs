@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
 using Sistema_Gestión_Clinica.Services;
 using Sistema_Gestión_Clinica.ViewModels;
+using System.Security.Claims;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
+    [Authorize] // <--- ESTO BLOQUEA EL ACCESO A USUARIOS NO AUTENTICADOS
     public class PacienteController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -23,91 +26,371 @@ namespace Sistema_Gestión_Clinica.Controllers
             _filaVirtualService = filaVirtualService;
         }
 
-        // GET: Paciente/Index/1 (1 = IdPaciente de prueba)
-        public async Task<IActionResult> Index(int idPaciente = 1)
-        {
-            var citas = await _context.Cita
-                .Include(c => c.Medico)
-                .Include(c => c.EstadoCita)
-                .Where(c => c.IdPaciente == idPaciente)
-                .OrderByDescending(c => c.FechaHora)
-                .ToListAsync();
 
-            ViewBag.IdPaciente = idPaciente;
-            return View(citas);
+        private int ObtenerIdPaciente()
+        {
+            // Obtener el identificador del usuario que inició sesión
+            var idUsuarioClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            if (!int.TryParse(idUsuarioClaim, out int idUsuario))
+            {
+                throw new UnauthorizedAccessException(
+                    "No se pudo identificar al usuario autenticado."
+                );
+            }
+
+            // Buscar el paciente asociado con ese usuario
+            var idPaciente = _context.Paciente
+                .Where(p => p.IdUsuario == idUsuario)
+                .Select(p => (int?)p.IdPaciente)
+                .FirstOrDefault();
+
+            if (!idPaciente.HasValue)
+            {
+                throw new UnauthorizedAccessException(
+                    "La cuenta no tiene un paciente asociado."
+                );
+            }
+
+            return idPaciente.Value;
         }
 
-        // GET: Paciente/Agendar
+
+        public IActionResult Index()
+        {
+            return RedirectToAction("MisCitas");
+        }
+
+        public async Task<IActionResult> MisCitas()
+        {
+            try
+            {
+                int idPaciente = ObtenerIdPaciente();
+                var citas = await _context.Cita
+                    .Include(c => c.Medico)
+                    .Include(c => c.EstadoCita)
+                    .Where(c => c.IdPaciente == idPaciente)
+                    .OrderByDescending(c => c.FechaHora)
+                    .ToListAsync();
+                return View(citas);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudieron cargar tus citas: " + ex.Message;
+                return View(new List<Cita>());
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> Agendar()
         {
-            ViewBag.Medicos = await _context.Medico
-                .Include(m => m.Especialidad)
-                .ToListAsync();
-
-            return View();
-        }
-
-        // POST: Paciente/Agendar
-        [HttpPost]
-        public async Task<IActionResult> Agendar(AgendarCitaViewModel model, int idPaciente = 1)
-        {
-            if (!ModelState.IsValid)
+            try
             {
-                ViewBag.Medicos = await _context.Medico.Include(m => m.Especialidad).ToListAsync();
-                return View(model);
+                await CargarListas();
+                return View(new AgendarCitaViewModel());
             }
-
-            var estadoAgendada = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Agendada");
-
-            string codigo = $"T-{new Random().Next(100, 999)}";
-
-            var nuevaCita = new Cita
+            catch (Exception ex)
             {
-                CodigoTurno = codigo,
-                IdPaciente = idPaciente,
-                IdMedico = model.IdMedico,
-                IdEstadoCita = estadoAgendada?.IdEstadoCita ?? 1,
-                FechaHora = model.FechaHora,
-                MotivoConsulta = model.MotivoConsulta
-            };
-
-            _context.Cita.Add(nuevaCita);
-            await _context.SaveChangesAsync();
-
-            TempData["Mensaje"] = $"Cita agendada con éxito. Su código de turno es: {codigo}";
-            return RedirectToAction("Index");
+                TempData["Error"] = "No se pudo cargar el formulario: " + ex.Message;
+                await CargarListas();
+                return View(new AgendarCitaViewModel());
+            }
         }
 
-        // POST: Paciente/CancelarCita
         [HttpPost]
-        public async Task<IActionResult> CancelarCita(int idCita)
+        public async Task<IActionResult> Agendar(AgendarCitaViewModel vm)
         {
-            var cita = await _context.Cita.FindAsync(idCita);
-            if (cita != null)
+            try
             {
-                var estadoCancelada = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Cancelada");
-                if (estadoCancelada != null)
-                {
-                    cita.IdEstadoCita = estadoCancelada.IdEstadoCita;
-                    await _context.SaveChangesAsync();
+                await CargarListas();
+                if (!ModelState.IsValid) return View(vm);
 
-                    // Reasignación automática si hay alguien en lista de espera
+                var error = await Validar(vm);
+                if (error != null)
+                {
+                    ModelState.AddModelError("", error);
+                    return View(vm);
+                }
+
+                // CORREGIDO: acepta "Agendada" o "Programada", el que exista
+                var estado = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Agendada")
+                    ?? await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Programada");
+                if (estado == null)
+                {
+                    ModelState.AddModelError("", "No existe el estado 'Agendada' ni 'Programada' en la base de datos.");
+                    return View(vm);
+                }
+
+                var fechaHora = vm.Fecha.Date + vm.Hora;
+
+                var cita = new Cita
+                {
+                    IdPaciente = ObtenerIdPaciente(),
+                    IdMedico = vm.IdMedico,
+                    FechaHora = fechaHora,
+                    MotivoConsulta = vm.Motivo,
+                    IdEstadoCita = estado.IdEstadoCita,
+                    CodigoTurno = await GenerarCodigo(vm.Fecha)
+                };
+                _context.Cita.Add(cita);
+                await _context.SaveChangesAsync();
+
+                TempData["Exito"] = $"Cita agendada. Su código de turno es {cita.CodigoTurno}.";
+                return RedirectToAction("MisCitas");
+            }
+            catch (Exception ex)
+            {
+                await CargarListas();
+                // CORREGIDO: ahora sí te muestra el error real, no solo "saving entity changes"
+                var real = ex.InnerException?.Message ?? ex.Message;
+                ModelState.AddModelError("", "Ocurrió un error al agendar la cita: " + real);
+                return View(vm);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Cancelar(int id)
+        {
+            try
+            {
+                var cita = await _context.Cita.Include(c => c.EstadoCita)
+                    .FirstOrDefaultAsync(c => c.IdCita == id && c.IdPaciente == ObtenerIdPaciente());
+                if (cita == null) { TempData["Error"] = "No se encontró la cita."; return RedirectToAction("MisCitas"); }
+
+                if (cita.EstadoCita.NombreEstado != "Agendada" && cita.EstadoCita.NombreEstado != "Programada")
+                { TempData["Error"] = "Esta cita ya no se puede cancelar."; return RedirectToAction("MisCitas"); }
+
+                if (cita.FechaHora - DateTime.Now < TimeSpan.FromHours(2))
+                { TempData["Error"] = "Solo se puede cancelar con al menos 2 horas de anticipación."; return RedirectToAction("MisCitas"); }
+
+                var estadoCancelada = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Cancelada");
+                if (estadoCancelada == null) { TempData["Error"] = "No existe el estado 'Cancelada'."; return RedirectToAction("MisCitas"); }
+
+                cita.IdEstadoCita = estadoCancelada.IdEstadoCita;
+                await _context.SaveChangesAsync();
+
+                try
+                {
                     await _reasignacionService.ReasignarCupoLiberadoAsync(cita.IdMedico, cita.FechaHora);
                 }
-            }
+                catch { }
 
-            TempData["Mensaje"] = "Cita cancelada correctamente.";
-            return RedirectToAction("Index");
+                TempData["Exito"] = "Cita cancelada correctamente.";
+                return RedirectToAction("MisCitas");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo cancelar la cita: " + (ex.InnerException?.Message ?? ex.Message);
+                return RedirectToAction("MisCitas");
+            }
         }
 
-        // GET: Paciente/FilaVirtual/5
+        [HttpGet]
+        public async Task<IActionResult> Reprogramar(int id)
+        {
+            try
+            {
+                var cita = await _context.Cita.Include(c => c.Medico)
+                    .FirstOrDefaultAsync(c => c.IdCita == id && c.IdPaciente == ObtenerIdPaciente());
+                if (cita == null) return NotFound();
+                await CargarListas();
+                return View(new AgendarCitaViewModel
+                {
+                    IdCita = cita.IdCita,
+                    IdMedico = cita.IdMedico,
+                    IdEspecialidad = cita.Medico.IdEspecialidad,
+                    Fecha = cita.FechaHora.Date,
+                    Hora = cita.FechaHora.TimeOfDay,
+                    Motivo = cita.MotivoConsulta
+                });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo cargar la cita: " + ex.Message;
+                return RedirectToAction("MisCitas");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Reprogramar(AgendarCitaViewModel vm)
+        {
+            try
+            {
+                await CargarListas();
+                if (!ModelState.IsValid) return View(vm);
+                var cita = await _context.Cita.FirstOrDefaultAsync(c => c.IdCita == vm.IdCita && c.IdPaciente == ObtenerIdPaciente());
+                if (cita == null) return NotFound();
+
+                var error = await Validar(vm);
+                if (error != null) { ModelState.AddModelError("", error); return View(vm); }
+
+                cita.IdMedico = vm.IdMedico;
+                cita.FechaHora = vm.Fecha.Date + vm.Hora;
+                cita.MotivoConsulta = vm.Motivo;
+                await _context.SaveChangesAsync();
+                TempData["Exito"] = "Cita reprogramada correctamente.";
+                return RedirectToAction("MisCitas");
+            }
+            catch (Exception ex)
+            {
+                await CargarListas();
+                ModelState.AddModelError("", "No se pudo reprogramar la cita: " + (ex.InnerException?.Message ?? ex.Message));
+                return View(vm);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ListaEspera()
+        {
+            try
+            {
+                await CargarListas();
+                ViewBag.MisInscripciones = await _context.ListaEspera
+                    .Include(l => l.Especialidad)
+                    .Where(l => l.IdPaciente == ObtenerIdPaciente() && !l.Atendido)
+                    .ToListAsync();
+                return View();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo cargar la lista de espera: " + ex.Message;
+                await CargarListas();
+                ViewBag.MisInscripciones = new List<ListaEspera>();
+                return View();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UnirseListaEspera(int idEspecialidad, DateTime fechaDeseada)
+        {
+            try
+            {
+                if (idEspecialidad <= 0) { TempData["Error"] = "Seleccione una especialidad."; return RedirectToAction("ListaEspera"); }
+                if (fechaDeseada.Date < DateTime.Today)
+                { TempData["Error"] = "La fecha deseada no puede ser pasada."; return RedirectToAction("ListaEspera"); }
+
+                bool duplicado = await _context.ListaEspera.AnyAsync(l =>
+                    l.IdPaciente == ObtenerIdPaciente() && l.IdEspecialidad == idEspecialidad &&
+                    l.FechaDeseada.Date == fechaDeseada.Date && !l.Atendido);
+                if (duplicado)
+                { TempData["Error"] = "Ya está inscrito en esa especialidad y fecha."; return RedirectToAction("ListaEspera"); }
+
+                _context.ListaEspera.Add(new ListaEspera
+                {
+                    IdPaciente = ObtenerIdPaciente(),
+                    IdEspecialidad = idEspecialidad,
+                    FechaDeseada = fechaDeseada.Date,
+                    Prioridad = 2,
+                    FechaRegistro = DateTime.Now,
+                    Atendido = false
+                });
+                await _context.SaveChangesAsync();
+                TempData["Exito"] = "Se unió a la lista de espera.";
+                return RedirectToAction("ListaEspera");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo unir a la lista de espera: " + (ex.InnerException?.Message ?? ex.Message);
+                return RedirectToAction("ListaEspera");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CancelarListaEspera(int id)
+        {
+            try
+            {
+                var item = await _context.ListaEspera.FirstOrDefaultAsync(l => l.IdListaEspera == id && l.IdPaciente == ObtenerIdPaciente());
+                if (item != null) { _context.ListaEspera.Remove(item); await _context.SaveChangesAsync(); TempData["Exito"] = "Inscripción cancelada."; }
+                else { TempData["Error"] = "No se encontró la inscripción."; }
+                return RedirectToAction("ListaEspera");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo cancelar la inscripción: " + ex.Message;
+                return RedirectToAction("ListaEspera");
+            }
+        }
+
         public async Task<IActionResult> FilaVirtual(int id)
         {
-            var model = await _filaVirtualService.ObtenerEstadoFilaAsync(id);
-            if (model == null) return NotFound();
-
-            return View(model);
+            try
+            {
+                var model = await _filaVirtualService.ObtenerEstadoFilaAsync(id);
+                if (model == null) return NotFound();
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "No se pudo cargar la fila virtual: " + ex.Message;
+                return RedirectToAction("MisCitas");
+            }
         }
+
+        private async Task<string?> Validar(AgendarCitaViewModel vm)
+        {
+            var fechaHora = vm.Fecha.Date + vm.Hora;
+            if (fechaHora <= DateTime.Now) return "No puede agendar en una fecha u hora pasada.";
+
+            int dia = (int)vm.Fecha.DayOfWeek;
+            bool dentroHorario = await _context.HorarioMedico.AnyAsync(h =>
+                h.IdMedico == vm.IdMedico && h.DiaSemana == dia &&
+                vm.Hora >= h.HoraInicio && vm.Hora < h.HoraFin);
+            if (!dentroHorario) return "El médico no atiende en ese día u hora.";
+
+            var idCancelada = await _context.EstadoCita.Where(e => e.NombreEstado == "Cancelada").Select(e => (int?)e.IdEstadoCita).FirstOrDefaultAsync();
+            bool ocupado = await _context.Cita.AnyAsync(c =>
+                c.IdMedico == vm.IdMedico && c.FechaHora == fechaHora &&
+                c.IdEstadoCita != idCancelada && c.IdCita != vm.IdCita);
+            if (ocupado) return "Ese horario ya está ocupado. Elija otro o únase a la lista de espera.";
+            return null;
+        }
+
+        private async Task<string> GenerarCodigo(DateTime fecha)
+        {
+            return await CodigoTurnoService.GenerarAsync(_context);
+        }
+
+        private async Task CargarListas()
+        {
+            try
+            {
+                ViewBag.Especialidades = await _context.Especialidad.ToListAsync();
+                ViewBag.Medicos = await _context.Medico.Include(m => m.Especialidad).ToListAsync();
+            }
+            catch
+            {
+                ViewBag.Especialidades = new List<Especialidad>();
+                ViewBag.Medicos = new List<Medico>();
+            }
+        }
+
+
+        // GET: Paciente/ObtenerFilaVirtual/5
+        [HttpGet]
+        public async Task<IActionResult> ObtenerFilaVirtual(int id)
+        {
+            var modelo =
+                await _filaVirtualService.ObtenerEstadoFilaAsync(id);
+
+            if (modelo == null)
+            {
+                return NotFound(new
+                {
+                    mensaje = "No se encontró la cita."
+                });
+            }
+
+            return Json(new
+            {
+                pacientesAdelante = modelo.PacientesAdelante,
+                tiempoEstimadoMinutos =
+                    modelo.TiempoEstimadoMinutos,
+                estadoActual = modelo.EstadoActual
+            });
+        }
+
     }
 }

@@ -1,31 +1,227 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+/* ==========================================
+   VARIABLES Y ESTILOS GLOBALES DE LA CLÍNICA
+   ========================================== */
+:root {
+    --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #00b4d8 100%);
+    --accent-color: #00b4d8;
+    --dark-bg: #1a1e29;
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --hover-transform: translateY(-5px);
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f4f7fe;
+    color: #2b2d42;
+    overflow-x: hidden;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* Transición suave para todos los elementos interactivos */
+a, button, .card, .nav-link, .btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* ==========================================
+   BARRA DE NAVEGACIÓN MODERNA (GLASSMORPHISM)
+   ========================================== */
+.navbar-custom {
+    background: #1a1e29 !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-size: 1.35rem;
+    letter-spacing: 0.5px;
+}
+
+    .navbar-brand:hover {
+        transform: scale(1.03);
+    }
+
+.nav-link {
+    position: relative;
+    font-weight: 500;
+}
+
+    /* Animación de línea inferior al pasar el mouse por los enlaces */
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 2px;
+        left: 50%;
+        background-color: var(--accent-color);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+
+    .nav-link:hover::after {
+        width: 80%;
+    }
+
+/* ==========================================
+   TARJETAS INTERACTIVAS CON ELEVACIÓN
+   ========================================== */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    background: #ffffff;
+    overflow: hidden;
+}
+
+    .card:hover {
+        transform: var(--hover-transform);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+
+/* ==========================================
+   BOTONES MODERNOS CON DEGRADADO Y EFECTO BRILLO
+   ========================================== */
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    font-weight: 600;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(13, 110, 253, 0.45);
+        background: linear-gradient(135deg, #0b5ed7 0%, #0096c7 100%);
+    }
+
+.btn-interactive {
+    position: relative;
+    overflow: hidden;
+}
+
+    .btn-interactive::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+
+    .btn-interactive:focus:not(:active)::after {
+        animation: ripple 0.6s ease-out;
+    }
+
+/* ==========================================
+   ANIMACIONES DE ENTRADA (FADE IN)
+   ========================================== */
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-in-out forwards;
+}
+
+.animate-up {
+    animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Subtitulos suaves para badges de estado */
+.bg-primary-subtle {
+    background-color: #e7f1ff !important;
+}
+
+.bg-success-subtle {
+    background-color: #e6f4ea !important;
+}
+
+.bg-warning-subtle {
+    background-color: #fff8e6 !important;
+}
+
+.bg-info-subtle {
+    background-color: #e0f7fa !important;
+}
+
+.text-primary-subtle {
+    color: #0d6efd !important;
+}
+
+.text-success-subtle {
+    color: #198754 !important;
+}
+
+/* Transición suave para cards e ítems de la lista */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+
+/* Transiciones suaves en toda la app */
+a, button, .card, .nav-link, .btn {
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.offcanvas .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transform: translateX(4px);
+}
+
+/* Cards elevadas interactivas */
+.card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Colores sutiles para avisos y tarjetas */
+.bg-primary-subtle {
+    background-color: #e7f1ff !important;
+}
+
+.bg-success-subtle {
+    background-color: #e6f4ea !important;
+}
+
+.bg-warning-subtle {
+    background-color: #fff8e6 !important;
+}
+
+.bg-danger-subtle {
+    background-color: #fce8e6 !important;
 }

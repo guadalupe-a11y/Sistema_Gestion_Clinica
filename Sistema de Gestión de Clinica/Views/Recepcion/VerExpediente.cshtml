@@ -1,0 +1,78 @@
+﻿@model Sistema_Gestión_Clinica.Models.Expediente
+@{
+    ViewData["Title"] = "Expediente del Paciente";
+    var historial = ViewBag.Historial as List<Sistema_Gestión_Clinica.Models.RegistroAtencion>;
+}
+
+<div class="container animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-folder-open text-primary me-2"></i>Expediente Clínico #@Model.IdExpediente
+            </h2>
+            <p class="text-muted mb-0">Paciente: <strong>@Model.Paciente?.Nombre @Model.Paciente?.Apellido</strong> (DUI: @Model.Paciente?.DUI)</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fa-solid fa-arrow-left me-1"></i> Volver a Recepción
+        </a>
+    </div>
+
+    <!-- TARJETA DE DATOS DEL PACIENTE -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3">
+                <h6 class="fw-bold text-primary border-bottom pb-2"><i class="fa-solid fa-user me-2"></i> Datos Personales</h6>
+                <p class="mb-1"><strong>Teléfono:</strong> @Model.Paciente?.Telefono</p>
+                <p class="mb-1"><strong>Fecha de Apertura:</strong> @Model.FechaApertura.ToString("dd/MM/yyyy")</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORIAL CONSULTAS -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i> Historial de Atenciones</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (historial != null && historial.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Médico</th>
+                                <th>Diagnóstico</th>
+                                <th>Indicaciones / Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in historial)
+                            {
+                                <tr>
+                                    <td>@item.FechaAtencion.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>Dr. @item.Cita?.Medico?.Nombre @item.Cita?.Medico?.Apellido</td>
+                                    <td>@(item.Diagnostico ?? "Sin diagnóstico registrado")</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@(item.Indicaciones ?? "Sin indicaciones")</div>
+                                        @if (!string.IsNullOrEmpty(item.NotasConsulta))
+                                        {
+                                            <small class="text-muted d-block">Notas: @item.NotasConsulta</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="p-4 text-center text-muted">
+                    <i class="fa-solid fa-notes-medical display-4 mb-2"></i>
+                    <p class="mb-0">Este paciente aún no registra consultas médicas completadas.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

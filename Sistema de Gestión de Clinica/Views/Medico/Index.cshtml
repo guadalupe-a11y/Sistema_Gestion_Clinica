@@ -1,67 +1,115 @@
 ﻿@model IEnumerable<Sistema_Gestión_Clinica.Models.Cita>
-
 @{
-    ViewData["Title"] = "Panel del Médico";
+    ViewData["Title"] = "Panel Médico";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4">📋 Pacientes Agendados para Hoy</h2>
+<div class="container animate__animated animate__fadeIn">
 
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-user-md text-primary me-2"></i>Agenda y Atenciones Médicas
+            </h2>
+            <p class="text-muted mb-0">Gestión de pacientes agendados y turnos en sala de espera.</p>
+        </div>
+        <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill">
+            <i class="fa-solid fa-calendar-day me-1"></i> @DateTime.Now.ToString("dd/MM/yyyy")
+        </span>
+    </div>
+
+    <!-- MENSAJE INFORMATIVO -->
     @if (TempData["Mensaje"] != null)
     {
-        <div class="alert alert-success">@TempData["Mensaje"]</div>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     }
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Turno</th>
-                        <th>Paciente</th>
-                        <th>Hora</th>
-                        <th>Motivo</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var cita in Model)
-                    {
-                        <tr>
-                            <td><strong>@cita.CodigoTurno</strong></td>
-                            <td>@cita.Paciente?.Nombre @cita.Paciente?.Apellido</td>
-                            <td>@cita.FechaHora.ToString("hh:mm tt")</td>
-                            <td>@cita.MotivoConsulta</td>
-                            <td>
-                                <span class="badge @(cita.EstadoCita?.NombreEstado switch {
-                                    "Agendada" => "bg-primary",
-                                    "En Espera" => "bg-warning text-dark",
-                                    "En Consulta" => "bg-info text-dark",
-                                    "Finalizada" => "bg-success",
-                                    "Cancelada" => "bg-danger",
-                                    _ => "bg-secondary"
-                                })">
-                                    @cita.EstadoCita?.NombreEstado
-                                </span>
-                            </td>
-                            <td>
-                                @if (cita.EstadoCita?.NombreEstado == "En Espera" || cita.EstadoCita?.NombreEstado == "Agendada")
-                                {
-                                    <form asp-action="LlamarSiguiente" method="post" class="d-inline">
-                                        <input type="hidden" name="idCita" value="@cita.IdCita" />
-                                        <button type="submit" class="btn btn-sm btn-primary">🔔 Llamar</button>
-                                    </form>
-                                }
-                                else if (cita.EstadoCita?.NombreEstado == "En Consulta")
-                                {
-                                    <a asp-action="Atender" asp-route-idCita="@cita.IdCita" class="btn btn-sm btn-success">🩺 Continuar Consulta</a>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <!-- TABLA DE PACIENTES -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Turno</th>
+                                <th>Paciente</th>
+                                <th>Hora Agendada</th>
+                                <th>Motivo Consulta</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-primary fs-6">@item.CodigoTurno</span></td>
+                                    <td>
+                                        <div class="fw-bold">@item.Paciente?.Nombre @item.Paciente?.Apellido</div>
+                                        <small class="text-muted">DUI: @item.Paciente?.DUI</small>
+                                    </td>
+                                    <td>@item.FechaHora.ToString("hh:mm tt")</td>
+                                    <td>@(string.IsNullOrEmpty(item.MotivoConsulta) ? "Consulta General" : item.MotivoConsulta)</td>
+                                    <td>
+                                        @if (item.EstadoCita?.NombreEstado == "En Consulta")
+                                        {
+                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-stethoscope me-1"></i> En Consulta</span>
+                                        }
+                                        else if (item.EstadoCita?.NombreEstado == "En Espera")
+                                        {
+                                            <span class="badge bg-info text-white px-3 py-2 rounded-pill"><i class="fa-solid fa-clock me-1"></i> En Espera</span>
+                                        }
+                                        else if (item.EstadoCita?.NombreEstado == "Finalizada")
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill"><i class="fa-solid fa-check me-1"></i> Finalizada</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary px-3 py-2 rounded-pill">@item.EstadoCita?.NombreEstado</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.EstadoCita?.NombreEstado == "En Espera" || item.EstadoCita?.NombreEstado == "Agendada")
+                                        {
+                                            <form asp-action="LlamarSiguiente" method="post" class="d-inline">
+                                                <input type="hidden" name="idCita" value="@item.IdCita" />
+                                                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
+                                                    <i class="fa-solid fa-hand-holding-medical me-1"></i> Llamar / Atender
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (item.EstadoCita?.NombreEstado == "En Consulta")
+                                        {
+                                            <a asp-action="Atender" asp-route-idCita="@item.IdCita" class="btn btn-sm btn-warning text-dark rounded-pill px-3 fw-bold shadow-sm">
+                                                <i class="fa-solid fa-notes-medical me-1"></i> Continuar Consulta
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Recepcion" asp-action="VerExpediente" asp-route-idPaciente="@item.IdPaciente" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                                <i class="fa-solid fa-folder-open me-1"></i> Expediente
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="p-5 text-center text-muted">
+                    <i class="fa-solid fa-user-clock display-4 mb-3 text-secondary"></i>
+                    <h5 class="fw-bold">No hay citas pendientes</h5>
+                    <p class="mb-0">Las consultas agendadas para la jornada aparecerán enumeradas en esta lista.</p>
+                </div>
+            }
         </div>
     </div>
 </div>

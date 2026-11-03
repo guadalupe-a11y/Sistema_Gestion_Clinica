@@ -1,58 +1,188 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Sistema_de_Gestión_de_Clinica</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Clínica Médica</title>
+
+    <!-- Bootstrap, FontAwesome Icons & Animate.css -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Sistema_de_Gestión_de_Clinica.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">🏥 Clínica Médica</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Recepcion" asp-action="Index">🏢 Recepción</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Medico" asp-action="Index">🩺 Panel Médico</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Paciente" asp-action="Index">👤 Mis Citas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Admin" asp-action="Index">📊 Dashboard Admin</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="btn btn-outline-light btn-sm ms-2" asp-controller="Account" asp-action="Login">Cerrar Sesión</a>
-                </li>
-            </ul>
+<body class="bg-light">
+
+    <!-- BARRA SUPERIOR (HEADER GLOBAL) -->
+    <header class="sticky-top navbar-custom shadow-sm text-white">
+        <div class="d-flex align-items-center justify-content-between px-3 py-3" style="min-height: 85px;">
+
+            <!-- Marca y Botón para desplegar Menú Sidebar -->
+            <div class="d-flex align-items-center gap-3">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <button class="btn btn-outline-light btn-sm border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" title="Abrir Menú">
+                        <i class="fa-solid fa-bars fs-5"></i>
+                    </button>
+                }
+
+                <a class="navbar-brand fw-bold text-white mb-0 d-flex align-items-center gap-2"
+                   asp-controller="Home"
+                   asp-action="Index">
+
+                    <i class="fa-solid fa-hospital text-info fs-3 animate__animated animate__pulse animate__infinite"></i>
+
+                    <span class="fs-4">Clínica Médica</span>
+                </a>
+
+            </div>
+
+            <!-- Centro de Notificaciones & Estado de Usuario -->
+            <div class="d-flex align-items-center gap-3">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <!-- CAMPANA INTERACTIVA DE NOTIFICACIONES GLOBALES -->
+                    <div class="dropdown">
+                        <button class="btn btn-dark position-relative border-0 rounded-circle p-2" type="button" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-bell fs-5 text-warning"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge">
+                                3
+                            </span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow-lg p-2 animate__animated animate__fadeIn" style="width: 340px;" aria-labelledby="notifDropdown">
+                            <h6 class="dropdown-header border-bottom pb-2 fw-bold d-flex justify-content-between align-items-center text-dark">
+                                <span><i class="fa-solid fa-bell me-1 text-primary"></i> Notificaciones en Vivo</span>
+                                <span class="badge bg-primary-subtle text-primary">Nuevas</span>
+                            </h6>
+                            <div class="list-group list-group-flush" style="max-height: 280px; overflow-y: auto;">
+                                <!-- Notificación: Cita Adelantada -->
+                                <a href="#" class="list-group-item list-group-item-action border-0 py-2 small rounded mb-1">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-warning"><i class="fa-solid fa-clock-rotate-left me-1"></i> Turno Adelantado</strong>
+                                        <small class="text-muted">Hace 5m</small>
+                                    </div>
+                                    <p class="mb-0 text-muted">Tu cita con Medicina General se ha movido 15 min antes.</p>
+                                </a>
+                                <!-- Notificación: Cupo Liberado -->
+                                <a href="#" class="list-group-item list-group-item-action border-0 py-2 small rounded mb-1 bg-light">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-success"><i class="fa-solid fa-bolt me-1"></i> ¡Nuevo Cupo Disponible!</strong>
+                                        <small class="text-muted">Hace 15m</small>
+                                    </div>
+                                    <p class="mb-0 text-muted">Se liberó un turno para Pediatría para el día de hoy.</p>
+                                </a>
+                                <!-- Notificación: Cancelación -->
+                                <a href="#" class="list-group-item list-group-item-action border-0 py-2 small rounded">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <strong class="text-danger"><i class="fa-solid fa-circle-xmark me-1"></i> Cita Cancelada</strong>
+                                        <small class="text-muted">Ayer</small>
+                                    </div>
+                                    <p class="mb-0 text-muted">La cita del 05/11 fue cancelada por el Dr. Carlos Gómez.</p>
+                                </a>
+                            </div>
+                            <div class="border-top pt-2 text-center">
+                                <small class="text-primary fw-bold" style="cursor:pointer;">Marcar todas como leídas</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTÓN CERRAR SESIÓN -->
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" asp-controller="Account" asp-action="Login">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Ingresar
+                    </a>
+                }
+            </div>
         </div>
-    </div>
-</nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <!-- MENÚ LATERAL INTERACTIVO DE NAVEGACIÓN (OFFCANVAS SIDEBAR) -->
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebarMenu" style="width: 290px;">
+            <div class="offcanvas-header border-bottom border-secondary">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-primary text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white">@User.Identity.Name</h6>
+                        <small class="text-info fw-semibold">Menú de Control</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="nav nav-pills flex-column mb-auto gap-1">
+
+                    <!-- ACCESOS DEL PACIENTE -->
+                    @if (User.IsInRole("Paciente"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center gap-2" asp-controller="Paciente" asp-action="Index">
+                                <i class="fa-solid fa-house-medical text-info fs-5"></i> Mi Portal
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center gap-2" asp-controller="Paciente" asp-action="MisCitas">
+                                <i class="fa-solid fa-calendar-check text-info fs-5"></i> Mis Citas
+                            </a>
+                        </li>
+                    }
+
+                    <!-- ACCESOS DEL MÉDICO -->
+                    @if (User.IsInRole("Medico"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center gap-2" asp-controller="Medico" asp-action="Index">
+                                <i class="fa-solid fa-user-md text-info fs-5"></i> Mi Agenda Médica
+                            </a>
+                        </li>
+                    }
+
+                    <!-- ACCESOS DE RECEPCIÓN -->
+                    @if (User.IsInRole("Recepcionista"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center gap-2" asp-controller="Recepcion" asp-action="Index">
+                                <i class="fa-solid fa-building-user text-info fs-5"></i> Recepción Principal
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center gap-2" asp-controller="Indicadores" asp-action="Index">
+                                <i class="fa-solid fa-chart-pie text-warning fs-5"></i> Dashboard Indicadores
+                            </a>
+                        </li>
+                    }
+
+                    <!-- ACCESOS DE ADMINISTRACIÓN -->
+                    @if (User.IsInRole("Administrador"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center gap-2" asp-controller="Admin" asp-action="Index">
+                                <i class="fa-solid fa-chart-line text-info fs-5"></i> Panel de Administración
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+    <!-- CONTENIDO DINÁMICO DE LAS VISTAS -->
+    <div class="container py-4">
+        <main role="main" class="animate__animated animate__fadeIn">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Sistema_de_Gestión_de_Clinica - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

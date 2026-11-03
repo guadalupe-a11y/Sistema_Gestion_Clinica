@@ -1,6 +1,46 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model List<Sistema_Gestión_Clinica.Models.Cita>
+@{
+    ViewData["Title"] = "Mis citas";
 }
+
+<h2>Mis citas</h2>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success">@TempData["Exito"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<a asp-action="Agendar" class="btn btn-primary mb-3">Agendar nueva cita</a>
+<a asp-action="ListaEspera" class="btn btn-secondary mb-3 ms-2">Lista de espera</a>
+
+<table class="table">
+    <thead>
+        <tr><th>Código</th><th>Fecha y hora</th><th>Médico</th><th>Motivo</th><th>Estado</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.CodigoTurno</td>
+                <td>@c.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@c.Medico?.Nombre</td>
+                <td>@c.MotivoConsulta</td>
+                <td>@c.EstadoCita?.NombreEstado</td>
+                <td>
+                    @if (c.EstadoCita?.NombreEstado == "Agendada")
+                    {
+                        <a asp-action="Reprogramar" asp-route-id="@c.IdCita" class="btn btn-sm btn-warning">Reprogramar</a>
+                        <form asp-action="Cancelar" asp-route-id="@c.IdCita" method="post" class="d-inline"
+                              onsubmit="return confirm('¿Cancelar esta cita?');">
+                            <button class="btn btn-sm btn-danger">Cancelar</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

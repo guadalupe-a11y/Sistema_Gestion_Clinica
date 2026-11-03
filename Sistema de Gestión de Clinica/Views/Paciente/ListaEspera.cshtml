@@ -1,6 +1,51 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@using Sistema_Gestión_Clinica.Models
+@{
+    ViewData["Title"] = "Lista de espera";
+    var inscripciones = ViewBag.MisInscripciones as List<ListaEspera> ?? new List<ListaEspera>();
+    var especialidades = ViewBag.Especialidades as List<Especialidad> ?? new List<Especialidad>();
 }
+
+<h2>Lista de espera</h2>
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success">@TempData["Exito"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="UnirseListaEspera" method="post" class="mb-4">
+    <div class="mb-3">
+        <label>Especialidad</label>
+        <select name="idEspecialidad" class="form-control"
+                asp-items="@(new SelectList(ViewBag.Especialidades, "IdEspecialidad", "NombreEspecialidad"))">
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Fecha deseada</label>
+        <input type="date" name="fechaDeseada" class="form-control" required />
+    </div>
+    <button class="btn btn-primary">Unirme</button>
+</form>
+
+<h4>Mis inscripciones</h4>
+<table class="table">
+    <tr><th>Especialidad</th><th>Fecha deseada</th><th>Prioridad</th><th></th></tr>
+    @foreach (var l in inscripciones)
+    {
+        var nombreEsp = especialidades.FirstOrDefault(e => e.IdEspecialidad == l.IdEspecialidad)?.NombreEspecialidad ?? l.IdEspecialidad.ToString();
+        var textoPrioridad = l.Prioridad == 1 ? "Alta" : l.Prioridad == 2 ? "Normal" : "Baja";
+        <tr>
+            <td>@nombreEsp</td>
+            <td>@l.FechaDeseada.ToString("dd/MM/yyyy")</td>
+            <td>@textoPrioridad</td>
+            <td>
+                <form asp-action="CancelarListaEspera" asp-route-id="@l.IdListaEspera" method="post">
+                    <button class="btn btn-sm btn-danger">Cancelar</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<a asp-action="MisCitas" class="btn btn-secondary">Volver a Mis Citas</a>
