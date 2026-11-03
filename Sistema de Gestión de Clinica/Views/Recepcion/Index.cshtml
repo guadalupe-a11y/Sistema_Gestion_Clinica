@@ -64,13 +64,18 @@
                 Registrar paciente sin cita
             </a>
 
+            
             <!-- BOTÓN VOLVER A INDICADORES -->
             <a asp-controller="Indicadores"
                asp-action="Index"
-               class="btn btn-outline-secondary rounded-pill px-3">
-                <i class="fa-solid fa-chart-pie me-1"></i>
+               asp-route-fecha="@fechaFiltro"
+               class="btn rounded-pill px-4 fw-semibold text-white shadow-sm"
+               style="background: linear-gradient(90deg, #1166f5, #08b7d4);
+                border: none;">
+                <i class="fa-solid fa-chart-pie me-2"></i>
                 Volver a Indicadores
             </a>
+
 
         </div>
 

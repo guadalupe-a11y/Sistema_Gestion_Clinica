@@ -10,27 +10,32 @@ namespace Sistema_Gestión_Clinica.Controllers
     {
         private readonly SistemaDeGestionDB _context;
 
-        public IndicadoresController(
-            SistemaDeGestionDB context)
+        public IndicadoresController(SistemaDeGestionDB context)
         {
             _context = context;
         }
 
-        // GET: Indicadores/Index
+        // GET: Indicadores/Index?fecha=2026-11-02
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DateTime? fecha)
         {
-            DateTime hoy = DateTime.Today;
-            DateTime manana = hoy.AddDays(1);
+            // Utilizar la fecha elegida o la fecha actual
+            DateTime fechaSeleccionada =
+                fecha?.Date ?? DateTime.Today;
 
+            // Límite superior del filtro
+            DateTime fechaSiguiente =
+                fechaSeleccionada.AddDays(1);
+
+            // Consultar únicamente las citas de la fecha seleccionada
             var resumen = await _context.Cita
                 .Where(c =>
-                    c.FechaHora >= hoy &&
-                    c.FechaHora < manana)
+                    c.FechaHora >= fechaSeleccionada &&
+                    c.FechaHora < fechaSiguiente)
                 .GroupBy(c => 1)
                 .Select(g => new IndicadoresViewModel
                 {
-                    Fecha = hoy,
+                    Fecha = fechaSeleccionada,
 
                     TotalCitas = g.Count(),
 
@@ -56,9 +61,10 @@ namespace Sistema_Gestión_Clinica.Controllers
                 })
                 .FirstOrDefaultAsync();
 
+            // Si no hay citas, mostrar los indicadores en cero
             var modelo = resumen ?? new IndicadoresViewModel
             {
-                Fecha = hoy
+                Fecha = fechaSeleccionada
             };
 
             return View(modelo);
