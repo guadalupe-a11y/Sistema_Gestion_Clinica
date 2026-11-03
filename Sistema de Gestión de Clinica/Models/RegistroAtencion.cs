@@ -16,10 +16,15 @@ namespace Sistema_Gestión_Clinica.Models
         public string? Diagnostico { get; set; }
         public string? Indicaciones { get; set; }
 
-        // Mantenemos solo UNA definición de FechaAtencion
-        public DateTime FechaAtencion { get; set; } = DateTime.Now;
+        // Nuevos campos agregados para la consulta médica completa
+        public string? Sintomas { get; set; }
+        public string? RecetaMedica { get; set; }
+        public string? EstudiosSolicitados { get; set; }
+        public DateTime? ProximaCitaRecomendada { get; set; }
+        public DateTime FechaRegistro { get; set; } = DateTime.Now;
 
         [ForeignKey("IdCita")]
         public virtual Cita? Cita { get; set; }
     }
 }
+
