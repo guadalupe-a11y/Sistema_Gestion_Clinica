@@ -43,6 +43,7 @@
                         <input type="hidden" name="idCita" value="@Model.IdCita" />
 
                         <div class="mb-3">
+<<<<<<< HEAD
                             <label for="notas" class="form-label fw-semibold">Notas de Consulta / Síntomas</label>
                             <textarea id="notas" name="notas" class="form-rows-3 form-control rounded-3" rows="3" placeholder="Motivo de la visita, síntomas reportados por el paciente..." required></textarea>
                         </div>
@@ -61,10 +62,54 @@
                             <button type="submit" class="btn btn-success btn-lg rounded-pill px-4">
                                 <i class="bi bi-check-circle me-1"></i> Finalizar Consulta
                             </button>
+=======
+                            <label class="form-label fw-bold">Síntomas</label>
+                            <textarea name="sintomas" class="form-control" rows="2" placeholder="Describa los síntomas principales del paciente..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Notas de la Consulta / Examen Físico</label>
+                            <textarea name="notas" class="form-control" rows="2" placeholder="Notas adicionales o examen físico..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Diagnóstico</label>
+                            <textarea name="diagnostico" class="form-control" rows="2" required placeholder="Diagnóstico presuntivo o definitivo..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Receta Médica</label>
+                            <textarea name="recetaMedica" class="form-control" rows="3" placeholder="Medicamentos, dosis y frecuencia..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Estudios Solicitados</label>
+                            <textarea name="estudiosSolicitados" class="form-control" rows="2" placeholder="Análisis de laboratorio, radiografías, etc..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Indicaciones Generales</label>
+                            <textarea name="indicaciones" class="form-control" rows="2" placeholder="Cuidados, reposo, dieta u otras indicaciones..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Próxima Cita Recomendada</label>
+                            <input type="date" name="proximaCitaRecomendada" class="form-control" />
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" asp-route-idMedico="@Model.IdMedico" class="btn btn-outline-secondary">Regresar al Panel</a>
+                            <button type="submit" class="btn btn-success">✅ Finalizar Consulta</button>
+>>>>>>> ed2885cc7dcaf59b488c02a789073ae4546134f1
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+<<<<<<< HEAD
 </div>
+=======
+</div>
+
+>>>>>>> ed2885cc7dcaf59b488c02a789073ae4546134f1

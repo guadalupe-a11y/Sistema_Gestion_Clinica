@@ -1,0 +1,77 @@
+USE [SistemaDeGestiónDB];
+GO
+
+-- =================================================================
+-- 1. AGREGAR NUEVOS CAMPOS A LA TABLA RegistroAtencion
+-- =================================================================
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RegistroAtencion') AND name = 'Sintomas')
+    ALTER TABLE RegistroAtencion ADD Sintomas VARCHAR(MAX) NULL;
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RegistroAtencion') AND name = 'RecetaMedica')
+    ALTER TABLE RegistroAtencion ADD RecetaMedica VARCHAR(MAX) NULL;
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RegistroAtencion') AND name = 'EstudiosSolicitados')
+    ALTER TABLE RegistroAtencion ADD EstudiosSolicitados VARCHAR(MAX) NULL;
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RegistroAtencion') AND name = 'ProximaCitaRecomendada')
+    ALTER TABLE RegistroAtencion ADD ProximaCitaRecomendada DATE NULL;
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RegistroAtencion') AND name = 'FechaRegistro')
+    ALTER TABLE RegistroAtencion ADD FechaRegistro DATETIME NOT NULL DEFAULT GETDATE();
+GO
+
+-- =================================================================
+-- 2. CREAR / ACTUALIZAR PROCEDIMIENTO ALMACENADO
+-- =================================================================
+CREATE OR ALTER PROCEDURE sp_GuardarRegistroAtencion
+    @IdCita INT,
+    @NotasConsulta VARCHAR(MAX) = NULL,
+    @Diagnostico VARCHAR(MAX) = NULL,
+    @Indicaciones VARCHAR(MAX) = NULL,
+    @Sintomas VARCHAR(MAX) = NULL,
+    @RecetaMedica VARCHAR(MAX) = NULL,
+    @EstudiosSolicitados VARCHAR(MAX) = NULL,
+    @ProximaCitaRecomendada DATE = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- Guardar el registro clínico de la consulta
+        INSERT INTO RegistroAtencion (
+            IdCita, 
+            NotasConsulta, 
+            Diagnostico, 
+            Indicaciones, 
+            Sintomas, 
+            RecetaMedica, 
+            EstudiosSolicitados, 
+            ProximaCitaRecomendada
+        )
+        VALUES (
+            @IdCita, 
+            @NotasConsulta, 
+            @Diagnostico, 
+            @Indicaciones, 
+            @Sintomas, 
+            @RecetaMedica, 
+            @EstudiosSolicitados, 
+            @ProximaCitaRecomendada
+        );
+
+        -- Cambiar el estado de la cita a 'Finalizada'
+        DECLARE @IdEstadoFinalizada INT = (SELECT IdEstadoCita FROM EstadoCita WHERE NombreEstado = 'Finalizada');
+
+        UPDATE Cita 
+        SET IdEstadoCita = @IdEstadoFinalizada 
+        WHERE IdCita = @IdCita;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO

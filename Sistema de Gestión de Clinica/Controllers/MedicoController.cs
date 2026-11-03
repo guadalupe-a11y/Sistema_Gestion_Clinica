@@ -102,10 +102,18 @@ namespace Sistema_Gestión_Clinica.Controllers
             return View(cita);
         }
 
-        // POST: Medico/FinalizarConsulta
+        // POST: Medico/FinalizarConsulta (ACTUALIZADO CON LOS NUEVOS CAMPOS)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FinalizarConsulta(int idCita, string notas, string diagnostico, string indicaciones)
+        public async Task<IActionResult> FinalizarConsulta(
+            int idCita,
+            string notas,
+            string diagnostico,
+            string indicaciones,
+            string sintomas,
+            string recetaMedica,
+            string estudiosSolicitados,
+            DateTime? proximaCitaRecomendada)
         {
             var cita = await _context.Cita.FindAsync(idCita);
             if (cita == null) return NotFound();
@@ -131,7 +139,11 @@ namespace Sistema_Gestión_Clinica.Controllers
                 NotasConsulta = notas,
                 Diagnostico = diagnostico,
                 Indicaciones = indicaciones,
-                FechaAtencion = DateTime.Now
+                Sintomas = sintomas,
+                RecetaMedica = recetaMedica,
+                EstudiosSolicitados = estudiosSolicitados,
+                ProximaCitaRecomendada = proximaCitaRecomendada,
+                FechaRegistro = DateTime.Now
             };
 
             _context.RegistroAtencion.Add(registro);
