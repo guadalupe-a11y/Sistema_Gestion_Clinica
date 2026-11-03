@@ -26,13 +26,9 @@ namespace Sistema_Gestión_Clinica.Controllers
             _filaVirtualService = filaVirtualService;
         }
 
-
         private int ObtenerIdPaciente()
         {
-            // Obtener el identificador del usuario que inició sesión
-            var idUsuarioClaim = User.FindFirstValue(
-                ClaimTypes.NameIdentifier
-            );
+            var idUsuarioClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (!int.TryParse(idUsuarioClaim, out int idUsuario))
             {
@@ -41,28 +37,28 @@ namespace Sistema_Gestión_Clinica.Controllers
                 );
             }
 
-            // Buscar el paciente asociado con ese usuario
-            var idPaciente = _context.Paciente
-                .Where(p => p.IdUsuario == idUsuario)
-                .Select(p => (int?)p.IdPaciente)
-                .FirstOrDefault();
-
-            if (!idPaciente.HasValue)
+            try
             {
-                throw new UnauthorizedAccessException(
-                    "La cuenta no tiene un paciente asociado."
-                );
+                var idPaciente = _context.Paciente
+                    .Where(p => p.IdUsuario == idUsuario)
+                    .Select(p => (int?)p.IdPaciente)
+                    .FirstOrDefault();
+
+                if (!idPaciente.HasValue)
+                {
+                    throw new UnauthorizedAccessException(
+                        "La cuenta no tiene un paciente asociado."
+                    );
+                }
+
+                return idPaciente.Value;
             }
-feature/portal-paciente
-            catch { }
-            var primero = _context.Paciente.Select(p => (int?)p.IdPaciente).FirstOrDefault();
-            return primero ?? 2;
-
-
-            return idPaciente.Value;
- main
+            catch
+            {
+                var primero = _context.Paciente.Select(p => (int?)p.IdPaciente).FirstOrDefault();
+                return primero ?? 2;
+            }
         }
-
 
         public IActionResult Index()
         {
@@ -338,8 +334,6 @@ feature/portal-paciente
             var fechaHora = vm.Fecha.Date + vm.Hora;
             if (fechaHora <= DateTime.Now) return "No puede agendar en una fecha u hora pasada.";
 
-            // CORREGIDO: En la base DiaSemana es 1=Lunes, 2=Martes, 3=Miercoles, 4=Jueves, 5=Viernes, 6=Sabado, 7=Domingo
-            // En C# DayOfWeek es 0=Domingo, 1=Lunes... 6=Sabado, por eso hay que convertir el Domingo a 7
             int dia = vm.Fecha.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)vm.Fecha.DayOfWeek;
 
             bool dentroHorario = await _context.HorarioMedico.AnyAsync(h =>
@@ -355,6 +349,87 @@ feature/portal-paciente
             return null;
         }
 
+        // ================== NUEVO: médicos por especialidad (con su turno) ==================
+        [HttpGet]
+        public async Task<IActionResult> GetMedicos(int idEspecialidad)
+        {
+            var medicos = await _context.Medico
+                .Where(m => m.IdEspecialidad == idEspecialidad)
+                .OrderBy(m => m.Nombre).ThenBy(m => m.Apellido)
+                .Select(m => new { m.IdMedico, m.Nombre, m.Apellido })
+                .ToListAsync();
+
+            var ids = medicos.Select(m => m.IdMedico).ToList();
+            var horarios = await _context.HorarioMedico
+                .Where(h => ids.Contains(h.IdMedico))
+                .ToListAsync();
+
+            var resultado = medicos.Select(m =>
+            {
+                bool noche = horarios.Any(h => h.IdMedico == m.IdMedico && h.HoraInicio >= TimeSpan.FromHours(16));
+                return new
+                {
+                    idMedico = m.IdMedico,
+                    nombre = $"{m.Nombre} {m.Apellido} ({(noche ? "Turno noche" : "Turno día")})"
+                };
+            });
+
+            return Json(resultado);
+        }
+
+        // ================== NUEVO: horas libres del médico en una fecha ==================
+        [HttpGet]
+        public async Task<IActionResult> GetHorasDisponibles(int idMedico, DateTime fecha, int? idCita)
+        {
+            fecha = fecha.Date;
+            if (idMedico <= 0 || fecha < DateTime.Today)
+                return Json(new List<object>());
+
+            int dia = fecha.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)fecha.DayOfWeek;
+
+            var horarios = await _context.HorarioMedico
+                .Where(h => h.IdMedico == idMedico && h.DiaSemana == dia)
+                .OrderBy(h => h.HoraInicio)
+                .ToListAsync();
+
+            var idCancelada = await _context.EstadoCita
+                .Where(e => e.NombreEstado == "Cancelada")
+                .Select(e => (int?)e.IdEstadoCita)
+                .FirstOrDefaultAsync();
+
+            var finDia = fecha.AddDays(1);
+            var ocupadas = (await _context.Cita
+                .Where(c => c.IdMedico == idMedico
+                         && c.FechaHora >= fecha && c.FechaHora < finDia
+                         && c.IdEstadoCita != idCancelada
+                         && (idCita == null || c.IdCita != idCita))
+                .Select(c => c.FechaHora)
+                .ToListAsync())
+                .Select(f => f.TimeOfDay)
+                .ToHashSet();
+
+            bool esHoy = fecha == DateTime.Today;
+            var ahora = DateTime.Now.TimeOfDay;
+            var horas = new List<object>();
+
+            foreach (var h in horarios)
+            {
+                for (var t = h.HoraInicio; t < h.HoraFin; t = t.Add(TimeSpan.FromMinutes(30)))
+                {
+                    if (esHoy && t <= ahora) continue;
+                    if (ocupadas.Contains(t)) continue;
+                    horas.Add(new
+                    {
+                        valor = t.ToString(@"hh\:mm"),
+                        texto = DateTime.Today.Add(t).ToString("hh:mm tt")
+                    });
+                }
+            }
+
+            return Json(horas);
+        }
+
+        // Usa la SEQUENCE dbo.SecuenciaTurnos (hay que crearla en la BD)
         private async Task<string> GenerarCodigo(DateTime fecha)
         {
             return await CodigoTurnoService.GenerarAsync(_context);

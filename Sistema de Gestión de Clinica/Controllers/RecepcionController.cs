@@ -72,7 +72,7 @@ namespace Sistema_Gestión_Clinica.Controllers
                 .Include(r => r.Cita)
                     .ThenInclude(c => c!.Medico)
                 .Where(r => r.Cita != null && r.Cita.IdPaciente == idPaciente)
-                .OrderByDescending(r => r.FechaAtencion)
+                .OrderByDescending(r => r.FechaRegistro)
                 .ToListAsync();
 
             ViewBag.Historial = historialAtenciones;

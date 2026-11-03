@@ -435,3 +435,18 @@ WHERE Nombre IN ('Ana','Sofía','Mario','Paola','Carmen','Marta','Fernando','Pab
 
 INSERT INTO HorarioMedico (IdMedico, DiaSemana, HoraInicio, HoraFin)
 SELECT IdMedico, 6, '08:00', '13:00' FROM Medico WHERE Nombre IN ('Carlos','Ana','Luis','Sofía');
+
+
+
+
+USE [SistemaDeGestiónDB];
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.sequences WHERE name = 'SecuenciaTurnos' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE SEQUENCE dbo.SecuenciaTurnos
+        AS BIGINT
+        START WITH 1
+        INCREMENT BY 1;
+END
+GO
