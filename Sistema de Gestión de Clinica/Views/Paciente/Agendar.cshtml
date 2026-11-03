@@ -1,68 +1,203 @@
 ﻿@model Sistema_Gestión_Clinica.ViewModels.AgendarCitaViewModel
 @using Sistema_Gestión_Clinica.Models
+
 @{
     ViewData["Title"] = "Agendar cita";
-    var especialidades = ViewBag.Especialidades as IEnumerable<Especialidad> ?? new List<Especialidad>();
-    var todosMedicos = ViewBag.Medicos as IEnumerable<Medico> ?? new List<Medico>();
-    var medicos = todosMedicos.Where(m => Model.IdEspecialidad > 0 && m.IdEspecialidad == Model.IdEspecialidad);
+
+    var especialidades = ViewBag.Especialidades as IEnumerable<Especialidad>
+        ?? new List<Especialidad>();
+
+    var todosMedicos = ViewBag.Medicos as IEnumerable<Medico>
+        ?? new List<Medico>();
+
+    var medicos = todosMedicos.Where(m =>
+        Model.IdEspecialidad > 0 &&
+        m.IdEspecialidad == Model.IdEspecialidad);
+
     var horaTxt = Model.Hora.ToString(@"hh\:mm");
     var hoyTxt = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
-<h2>Agendar cita</h2>
-<div asp-validation-summary="All" class="text-danger"></div>
+<div class="container py-4 animate__animated animate__fadeIn">
 
-<form asp-action="Agendar" method="post" id="formCita" data-hora="@horaTxt" data-id-cita="@Model.IdCita">
-    <div class="mb-3">
-        <label>Especialidad</label>
-        <select asp-for="IdEspecialidad" id="IdEspecialidad" class="form-control">
-            <option value="">-- Seleccione --</option>
-            @foreach (var e in especialidades)
-            {
-                <option value="@e.IdEspecialidad">@e.NombreEspecialidad</option>
-            }
-        </select>
-        <span asp-validation-for="IdEspecialidad" class="text-danger"></span>
+    <!-- ENCABEZADO DE LA PÁGINA -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-primary mb-2">
+            <i class="fa-solid fa-calendar-plus me-2"></i>
+            Agendar cita médica
+        </h2>
+
+        <p class="text-muted mb-0">
+            Selecciona una especialidad, un médico y el horario
+            para programar tu consulta.
+        </p>
     </div>
 
-    <div class="mb-3">
-        <label>Médico</label>
-        <select asp-for="IdMedico" id="IdMedico" class="form-control">
-            <option value="">-- Seleccione --</option>
-            @foreach (var m in medicos)
-            {
-                <option value="@m.IdMedico">@m.Nombre @m.Apellido</option>
-            }
-        </select>
-        <span asp-validation-for="IdMedico" class="text-danger"></span>
-    </div>
+    <!-- TARJETA DEL FORMULARIO -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
 
-    <div class="mb-3">
-        <label asp-for="Fecha"></label>
-        <input asp-for="Fecha" id="Fecha" type="date" class="form-control" min="@hoyTxt" />
-        <span asp-validation-for="Fecha" class="text-danger"></span>
-    </div>
+        <div class="card-header text-white py-3 px-4"
+             style="background: linear-gradient(90deg, #1166f5, #08b7d4);">
 
-    <div class="mb-3">
-        <label>Hora</label>
-        <select asp-for="Hora" id="Hora" class="form-control">
-            <option value="">-- Seleccione médico y fecha --</option>
-        </select>
-        <span asp-validation-for="Hora" class="text-danger"></span>
-    </div>
+            <h5 class="fw-bold mb-0">
+                <i class="fa-solid fa-clipboard-check me-2"></i>
+                Datos de la cita
+            </h5>
 
-    <div class="mb-3">
-        <label asp-for="Motivo"></label>
-        <textarea asp-for="Motivo" class="form-control"></textarea>
-        <span asp-validation-for="Motivo" class="text-danger"></span>
-    </div>
+        </div>
 
-    <button class="btn btn-primary">Agendar</button>
-    <a asp-action="MisCitas" class="btn btn-secondary">Volver</a>
-</form>
+        <div class="card-body p-4">
+
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3"></div>
+
+            <form asp-action="Agendar"
+                  method="post"
+                  id="formCita"
+                  data-hora="@horaTxt"
+                  data-id-cita="@Model.IdCita">
+
+                <!-- ESPECIALIDAD Y MÉDICO -->
+                <div class="row g-3 mb-3">
+
+                    <div class="col-md-6">
+                        <label for="IdEspecialidad"
+                               class="form-label fw-semibold">
+                            <i class="fa-solid fa-stethoscope text-primary me-1"></i>
+                            Especialidad
+                        </label>
+
+                        <select asp-for="IdEspecialidad"
+                                id="IdEspecialidad"
+                                class="form-select rounded-3">
+
+                            <option value="">-- Seleccione --</option>
+
+                            @foreach (var e in especialidades)
+                            {
+                                <option value="@e.IdEspecialidad">
+                                    @e.NombreEspecialidad
+                                </option>
+                            }
+                        </select>
+
+                        <span asp-validation-for="IdEspecialidad"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="IdMedico"
+                               class="form-label fw-semibold">
+                            <i class="fa-solid fa-user-doctor text-primary me-1"></i>
+                            Médico
+                        </label>
+
+                        <select asp-for="IdMedico"
+                                id="IdMedico"
+                                class="form-select rounded-3">
+
+                            <option value="">-- Seleccione --</option>
+
+                            @foreach (var m in medicos)
+                            {
+                                <option value="@m.IdMedico">
+                                    @m.Nombre @m.Apellido
+                                </option>
+                            }
+                        </select>
+
+                        <span asp-validation-for="IdMedico"
+                              class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <!-- FECHA Y HORA -->
+                <div class="row g-3 mb-3">
+
+                    <div class="col-md-6">
+                        <label asp-for="Fecha"
+                               class="form-label fw-semibold">
+                            <i class="fa-solid fa-calendar-days text-primary me-1"></i>
+                            Fecha
+                        </label>
+
+                        <input asp-for="Fecha"
+                               id="Fecha"
+                               type="date"
+                               class="form-control rounded-3"
+                               min="@hoyTxt" />
+
+                        <span asp-validation-for="Fecha"
+                              class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="Hora"
+                               class="form-label fw-semibold">
+                            <i class="fa-regular fa-clock text-primary me-1"></i>
+                            Hora
+                        </label>
+
+                        <select asp-for="Hora"
+                                id="Hora"
+                                class="form-select rounded-3">
+
+                            <option value="">
+                                -- Seleccione médico y fecha --
+                            </option>
+                        </select>
+
+                        <span asp-validation-for="Hora"
+                              class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <!-- MOTIVO -->
+                <div class="mb-4">
+                    <label asp-for="Motivo"
+                           class="form-label fw-semibold">
+                        <i class="fa-solid fa-notes-medical text-primary me-1"></i>
+                        Motivo de la consulta
+                    </label>
+
+                    <textarea asp-for="Motivo"
+                              class="form-control rounded-3"
+                              rows="4"
+                              placeholder="Describe brevemente el motivo de tu consulta..."></textarea>
+
+                    <span asp-validation-for="Motivo"
+                          class="text-danger"></span>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="d-flex justify-content-end gap-2 flex-wrap">
+
+                    <a asp-action="MisCitas"
+                       class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                        <i class="fa-solid fa-arrow-left me-2"></i>
+                        Volver
+                    </a>
+
+                    <button type="submit"
+                            class="btn text-white fw-semibold rounded-pill px-4 py-2 shadow-sm"
+                            style="background: linear-gradient(90deg, #1166f5, #08b7d4); border: none;">
+                        <i class="fa-solid fa-calendar-check me-2"></i>
+                        Agendar cita
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
     <script>
         (function () {
             var form = document.getElementById('formCita');
@@ -88,9 +223,12 @@
             async function cargarMedicos() {
                 resetSelect(selMed, '-- Seleccione --');
                 resetSelect(selHora, '-- Seleccione médico y fecha --');
+
                 if (!selEsp.value) return;
+
                 var r = await fetch('/Paciente/GetMedicos?idEspecialidad=' + selEsp.value);
                 var data = await r.json();
+
                 for (var i = 0; i < data.length; i++) {
                     var medico = data[i];
                     selMed.add(new Option(medico.nombre, medico.idMedico));
@@ -99,29 +237,49 @@
 
             async function cargarHoras(horaSeleccionada = '') {
                 resetSelect(selHora, '-- Seleccione --');
+
                 if (!selMed.value || !inpFecha.value) return;
-                var url = '/Paciente/GetHorasDisponibles?idMedico=' + selMed.value + '&fecha=' + inpFecha.value;
+
+                var url = '/Paciente/GetHorasDisponibles?idMedico=' + selMed.value +
+                    '&fecha=' + inpFecha.value;
+
                 if (idCita !== '0') url += '&idCita=' + idCita;
+
                 var r = await fetch(url);
                 var data = await r.json();
+
                 if (data.length === 0) {
                     resetSelect(selHora, 'Sin horarios disponibles ese día');
                     return;
                 }
+
                 for (var i = 0; i < data.length; i++) {
                     var hora = data[i];
                     selHora.add(new Option(hora.texto, hora.valor));
                 }
-                if (horaSeleccionada && horaSeleccionada !== '00:00') selHora.value = horaSeleccionada;
+
+                if (horaSeleccionada && horaSeleccionada !== '00:00') {
+                    selHora.value = horaSeleccionada;
+                }
             }
 
-            selEsp.addEventListener('change', function () { cargarMedicos(); });
-            selMed.addEventListener('change', function () { cargarHoras(''); });
-            inpFecha.addEventListener('change', function () { cargarHoras(''); });
+            selEsp.addEventListener('change', function () {
+                cargarMedicos();
+            });
 
-            // Si vuelve del servidor con un error, conserva lo elegido
+            selMed.addEventListener('change', function () {
+                cargarHoras('');
+            });
+
+            inpFecha.addEventListener('change', function () {
+                cargarHoras('');
+            });
+
+            // Conserva la selección cuando hay un error de validación
             document.addEventListener('DOMContentLoaded', function () {
-                if (selMed.value && inpFecha.value) cargarHoras(horaInicial);
+                if (selMed.value && inpFecha.value) {
+                    cargarHoras(horaInicial);
+                }
             });
         })();
     </script>

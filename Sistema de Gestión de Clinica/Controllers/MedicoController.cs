@@ -127,15 +127,25 @@ namespace Sistema_Gestión_Clinica.Controllers
                 cita.IdEstadoCita = estadoFinalizada.IdEstadoCita;
             }
 
+
             // 2. Buscar expediente del paciente para asociar la atención
             var expediente = await _context.Expediente
                 .FirstOrDefaultAsync(e => e.IdPaciente == cita.IdPaciente);
+
+            // Verificar que el paciente tenga un expediente válido
+            if (expediente == null)
+            {
+                TempData["Error"] =
+                    "No se puede finalizar la consulta porque el paciente no tiene un expediente registrado.";
+
+                return RedirectToAction(nameof(Atender), new { idCita });
+            }
 
             // 3. Crear el registro de la consulta médica
             var registro = new RegistroAtencion
             {
                 IdCita = idCita,
-                IdExpediente = expediente?.IdExpediente ?? 0, // Asigna el IdExpediente si existe
+                IdExpediente = expediente.IdExpediente,
                 NotasConsulta = notas,
                 Diagnostico = diagnostico,
                 Indicaciones = indicaciones,

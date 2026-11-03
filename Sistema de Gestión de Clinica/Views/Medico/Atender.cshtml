@@ -1,115 +1,245 @@
 ﻿@model Sistema_Gestión_Clinica.Models.Cita
+
 @{
     ViewData["Title"] = "Atención Médica";
-    var expediente = ViewBag.Expediente as Sistema_Gestión_Clinica.Models.Expediente;
+
+    var expediente = ViewBag.Expediente
+        as Sistema_Gestión_Clinica.Models.Expediente;
 }
 
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary fw-bold">
-            <i class="bi bi-stethoscope me-2"></i>Consulta Médica en Proceso
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+
+        <h2 class="text-primary fw-bold mb-0">
+            <i class="bi bi-stethoscope me-2"></i>
+            Consulta Médica en Proceso
         </h2>
-        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
-            <i class="bi bi-arrow-left me-1"></i> Volver a la Lista
+
+        <a asp-controller="Medico"
+           asp-action="Index"
+           class="btn text-white rounded-pill px-4 shadow-sm"
+           style="background: linear-gradient(90deg, #1166f5, #08b7d4); border: none;">
+            <i class="bi bi-arrow-left me-1"></i>
+            Volver a la Lista
         </a>
+
     </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger rounded-3">
+            @TempData["Error"]
+        </div>
+    }
 
     <div class="row g-4">
-        <!-- Tarjeta de Datos del Paciente -->
+
+        <!-- DATOS DEL PACIENTE -->
         <div class="col-md-4">
+
             <div class="card border-0 shadow-sm rounded-4 mb-3">
+
                 <div class="card-header bg-primary text-white rounded-top-4 py-3">
-                    <h5 class="card-title mb-0"><i class="bi bi-person-circle me-2"></i>Datos del Paciente</h5>
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-circle me-2"></i>
+                        Datos del Paciente
+                    </h5>
                 </div>
+
                 <div class="card-body">
-                    <p class="mb-2"><strong>Nombre:</strong> @Model.Paciente?.Nombre @Model.Paciente?.Apellido</p>
-                    <p class="mb-2"><strong>DUI:</strong> @(Model.Paciente?.DUI ?? "N/A")</p>
-                    <p class="mb-2"><strong>Teléfono:</strong> @(Model.Paciente?.Telefono ?? "N/A")</p>
+
+                    <p class="mb-2">
+                        <strong>Nombre:</strong>
+                        @Model.Paciente?.Nombre @Model.Paciente?.Apellido
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>DUI:</strong>
+                        @(Model.Paciente?.DUI ?? "N/A")
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Teléfono:</strong>
+                        @(Model.Paciente?.Telefono ?? "N/A")
+                    </p>
+
                     <hr />
-                    <p class="mb-2 text-muted"><strong>Fecha de Cita:</strong> @Model.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
-                    <p class="mb-0 text-muted"><strong>Expediente N°:</strong> @(expediente?.IdExpediente.ToString() ?? "Sin Expediente")</p>
+
+                    <p class="mb-2 text-muted">
+                        <strong>Fecha de Cita:</strong>
+                        @Model.FechaHora.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+
+                    <p class="mb-0 text-muted">
+                        <strong>Expediente N°:</strong>
+                        @(expediente?.IdExpediente.ToString() ?? "Sin Expediente")
+                    </p>
+
                 </div>
             </div>
+
         </div>
 
-        <!-- Formulario de Registro de Atención -->
+        <!-- FORMULARIO DE ATENCIÓN -->
         <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-4">
-                    <h4 class="fw-bold mb-3 text-secondary">Registro de Consulta</h4>
 
-                    <form asp-action="FinalizarConsulta" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="idCita" value="@Model.IdCita" />
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
 
-                        <div class="mb-3">
-<<<<<<< HEAD
-                            <label for="notas" class="form-label fw-semibold">Notas de Consulta / Síntomas</label>
-                            <textarea id="notas" name="notas" class="form-rows-3 form-control rounded-3" rows="3" placeholder="Motivo de la visita, síntomas reportados por el paciente..." required></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="diagnostico" class="form-label fw-semibold">Diagnóstico Médico</label>
-                            <input type="text" id="diagnostico" name="diagnostico" class="form-control rounded-3" placeholder="Ej: Infección respiratoria aguda" required />
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="indicaciones" class="form-label fw-semibold">Indicaciones / Receta Médica</label>
-                            <textarea id="indicaciones" name="indicaciones" class="form-control rounded-3" rows="4" placeholder="Medicamentos prescritos, dosis, días de tratamiento o reposo..." required></textarea>
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="submit" class="btn btn-success btn-lg rounded-pill px-4">
-                                <i class="bi bi-check-circle me-1"></i> Finalizar Consulta
-                            </button>
-=======
-                            <label class="form-label fw-bold">Síntomas</label>
-                            <textarea name="sintomas" class="form-control" rows="2" placeholder="Describa los síntomas principales del paciente..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Notas de la Consulta / Examen Físico</label>
-                            <textarea name="notas" class="form-control" rows="2" placeholder="Notas adicionales o examen físico..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Diagnóstico</label>
-                            <textarea name="diagnostico" class="form-control" rows="2" required placeholder="Diagnóstico presuntivo o definitivo..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Receta Médica</label>
-                            <textarea name="recetaMedica" class="form-control" rows="3" placeholder="Medicamentos, dosis y frecuencia..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Estudios Solicitados</label>
-                            <textarea name="estudiosSolicitados" class="form-control" rows="2" placeholder="Análisis de laboratorio, radiografías, etc..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Indicaciones Generales</label>
-                            <textarea name="indicaciones" class="form-control" rows="2" placeholder="Cuidados, reposo, dieta u otras indicaciones..."></textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Próxima Cita Recomendada</label>
-                            <input type="date" name="proximaCitaRecomendada" class="form-control" />
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="Index" asp-route-idMedico="@Model.IdMedico" class="btn btn-outline-secondary">Regresar al Panel</a>
-                            <button type="submit" class="btn btn-success">✅ Finalizar Consulta</button>
->>>>>>> ed2885cc7dcaf59b488c02a789073ae4546134f1
-                        </div>
-                    </form>
+                <div class="card-header text-white py-3"
+                     style="background: linear-gradient(90deg, #198754, #20c997);">
+                    <h4 class="fw-bold mb-0">
+                        <i class="bi bi-journal-medical me-2"></i>
+                        Registro de Consulta
+                    </h4>
                 </div>
-            </div>
-        </div>
-    </div>
-<<<<<<< HEAD
-</div>
-=======
-</div>
 
->>>>>>> ed2885cc7dcaf59b488c02a789073ae4546134f1
+                <div class="card-body p-4">
+
+                    <form asp-controller="Medico"
+                          asp-action="FinalizarConsulta"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="idCita"
+                               value="@Model.IdCita" />
+
+                        <!-- SÍNTOMAS -->
+                        <div class="mb-3">
+                            <label for="sintomas"
+                                   class="form-label fw-semibold">
+                                Síntomas
+                            </label>
+
+                            <textarea id="sintomas"
+                                      name="sintomas"
+                                      class="form-control rounded-3"
+                                      rows="3"
+                                      placeholder="Describa los síntomas principales del paciente..."></textarea>
+                        </div>
+
+                        <!-- NOTAS -->
+                        <div class="mb-3">
+                            <label for="notas"
+                                   class="form-label fw-semibold">
+                                Notas de Consulta / Examen Físico
+                            </label>
+
+                            <textarea id="notas"
+                                      name="notas"
+                                      class="form-control rounded-3"
+                                      rows="3"
+                                      placeholder="Observaciones médicas y examen físico..."></textarea>
+                        </div>
+
+                        <!-- DIAGNÓSTICO -->
+                        <div class="mb-3">
+                            <label for="diagnostico"
+                                   class="form-label fw-semibold">
+                                Diagnóstico Médico
+                            </label>
+
+                            <textarea id="diagnostico"
+                                      name="diagnostico"
+                                      class="form-control rounded-3"
+                                      rows="2"
+                                      placeholder="Diagnóstico presuntivo o definitivo..."
+                                      required></textarea>
+                        </div>
+
+                        <!-- RECETA -->
+                        <div class="mb-3">
+                            <label for="recetaMedica"
+                                   class="form-label fw-semibold">
+                                Receta Médica
+                            </label>
+
+                            <textarea id="recetaMedica"
+                                      name="recetaMedica"
+                                      class="form-control rounded-3"
+                                      rows="3"
+                                      placeholder="Medicamentos, dosis y frecuencia..."></textarea>
+                        </div>
+
+                        <!-- ESTUDIOS -->
+                        <div class="mb-3">
+                            <label for="estudiosSolicitados"
+                                   class="form-label fw-semibold">
+                                Estudios Solicitados
+                            </label>
+
+                            <textarea id="estudiosSolicitados"
+                                      name="estudiosSolicitados"
+                                      class="form-control rounded-3"
+                                      rows="2"
+                                      placeholder="Análisis de laboratorio, radiografías, etc..."></textarea>
+                        </div>
+
+                        <!-- INDICACIONES -->
+                        <div class="mb-3">
+                            <label for="indicaciones"
+                                   class="form-label fw-semibold">
+                                Indicaciones Generales
+                            </label>
+
+                            <textarea id="indicaciones"
+                                      name="indicaciones"
+                                      class="form-control rounded-3"
+                                      rows="3"
+                                      placeholder="Cuidados, reposo, dieta y otras recomendaciones..."></textarea>
+                        </div>
+
+                        <!-- PRÓXIMA CITA -->
+                        <div class="mb-4">
+                            <label for="proximaCitaRecomendada"
+                                   class="form-label fw-semibold">
+                                Próxima Cita Recomendada
+                            </label>
+
+                            <input type="date"
+                                   id="proximaCitaRecomendada"
+                                   name="proximaCitaRecomendada"
+                                   class="form-control rounded-3" />
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+
+                            <a asp-controller="Medico"
+                               asp-action="Index"
+                               class="btn btn-outline-secondary rounded-pill px-4">
+                                Cancelar
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-success btn-lg rounded-pill px-4"
+                                @(expediente == null ? "disabled" : "")>
+                                <i class="bi bi-check-circle me-1"></i>
+                                Finalizar Consulta
+                            </button>
+
+                        </div>
+
+                        @if (expediente == null)
+                        {
+                            <p class="text-danger mt-3 mb-0">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                No se puede finalizar la consulta porque
+                                el paciente no tiene un expediente registrado.
+                            </p>
+                        }
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

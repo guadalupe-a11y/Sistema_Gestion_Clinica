@@ -1,46 +1,204 @@
 ﻿@model List<Sistema_Gestión_Clinica.Models.Cita>
+
 @{
-    ViewData["Title"] = "Mis citas";
+    ViewData["Title"] = "Mis citas médicas";
 }
 
-<h2>Mis citas</h2>
+<div class="container py-4 animate__animated animate__fadeIn">
 
-@if (TempData["Exito"] != null)
-{
-    <div class="alert alert-success">@TempData["Exito"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold text-primary mb-2">
+                <i class="fa-solid fa-calendar-check me-2"></i>
+                Mis citas médicas
+            </h2>
+            <p class="text-muted mb-0">
+                Consulta tus citas programadas, su estado y el historial de atenciones.
+            </p>
+        </div>
 
-<a asp-action="Agendar" class="btn btn-primary mb-3">Agendar nueva cita</a>
-<a asp-action="ListaEspera" class="btn btn-secondary mb-3 ms-2">Lista de espera</a>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+            <i class="fa-solid fa-list-check me-1"></i>
+            @Model.Count citas registradas
+        </span>
+    </div>
 
-<table class="table">
-    <thead>
-        <tr><th>Código</th><th>Fecha y hora</th><th>Médico</th><th>Motivo</th><th>Estado</th><th></th></tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model)
-        {
-            <tr>
-                <td>@c.CodigoTurno</td>
-                <td>@c.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>@c.Medico?.Nombre</td>
-                <td>@c.MotivoConsulta</td>
-                <td>@c.EstadoCita?.NombreEstado</td>
-                <td>
-                    @if (c.EstadoCita?.NombreEstado == "Agendada")
-                    {
-                        <a asp-action="Reprogramar" asp-route-id="@c.IdCita" class="btn btn-sm btn-warning">Reprogramar</a>
-                        <form asp-action="Cancelar" asp-route-id="@c.IdCita" method="post" class="d-inline"
-                              onsubmit="return confirm('¿Cancelar esta cita?');">
-                            <button class="btn btn-sm btn-danger">Cancelar</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <!-- MENSAJES -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-3">
+            <i class="fa-solid fa-circle-check me-2"></i>
+            @TempData["Exito"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger border-0 shadow-sm rounded-3">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- BOTONES -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a asp-controller="Paciente"
+           asp-action="Agendar"
+           class="btn text-white fw-semibold rounded-pill px-4 py-2 shadow-sm"
+           style="background: linear-gradient(90deg, #1166f5, #08b7d4); border: none;">
+            <i class="fa-solid fa-calendar-plus me-2"></i>
+            Agendar nueva cita
+        </a>
+
+        <a asp-controller="Paciente"
+           asp-action="ListaEspera"
+           class="btn btn-outline-primary fw-semibold rounded-pill px-4 py-2">
+            <i class="fa-solid fa-clock me-2"></i>
+            Lista de espera
+        </a>
+    </div>
+
+    <!-- TARJETA DE CITAS -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+        <div class="card-header bg-white border-bottom py-3 px-4">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="fa-solid fa-clipboard-list text-primary me-2"></i>
+                Historial de citas
+            </h5>
+        </div>
+
+        <div class="card-body p-0">
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4 py-3">Código</th>
+                                <th class="py-3">Fecha y hora</th>
+                                <th class="py-3">Médico</th>
+                                <th class="py-3">Motivo</th>
+                                <th class="py-3">Estado</th>
+                                <th class="py-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var c in Model)
+                            {
+                                string estado = c.EstadoCita?.NombreEstado ?? "Sin estado";
+
+                                string colorEstado = estado switch
+                                {
+                                    "Agendada" => "bg-warning text-dark",
+                                    "En Espera" => "bg-info text-dark",
+                                    "En Consulta" => "bg-primary text-white",
+                                    "Finalizada" => "bg-success text-white",
+                                    "Cancelada" => "bg-danger text-white",
+                                    "No-Show" => "bg-secondary text-white",
+                                    _ => "bg-light text-dark"
+                                };
+
+                                <tr>
+                                    <!-- CÓDIGO -->
+                                    <td class="ps-4">
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                                            <i class="fa-solid fa-ticket me-1"></i>
+                                            @c.CodigoTurno
+                                        </span>
+                                    </td>
+
+                                    <!-- FECHA -->
+                                    <td>
+                                        <div class="fw-semibold">
+                                            @c.FechaHora.ToString("dd/MM/yyyy")
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="fa-regular fa-clock me-1"></i>
+                                            @c.FechaHora.ToString("hh:mm tt")
+                                        </small>
+                                    </td>
+
+                                    <!-- MÉDICO -->
+                                    <td>
+                                        <i class="fa-solid fa-user-doctor text-primary me-1"></i>
+                                        @(c.Medico?.Nombre ?? "No asignado")
+                                        @c.Medico?.Apellido
+                                    </td>
+
+                                    <!-- MOTIVO -->
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(c.MotivoConsulta)
+                                            ? "Sin motivo registrado"
+                                            : c.MotivoConsulta)
+                                    </td>
+
+                                    <!-- ESTADO -->
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2 @colorEstado">
+                                            @estado
+                                        </span>
+                                    </td>
+
+                                    <!-- ACCIONES -->
+                                    <td class="text-center">
+                                        @if (estado == "Agendada")
+                                        {
+                                            <div class="d-flex gap-2 justify-content-center flex-wrap">
+
+                                                <a asp-controller="Paciente"
+                                                   asp-action="Reprogramar"
+                                                   asp-route-id="@c.IdCita"
+                                                   class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                                                    <i class="fa-solid fa-calendar-days me-1"></i>
+                                                    Reprogramar
+                                                </a>
+
+                                                <form asp-controller="Paciente"
+                                                      asp-action="Cancelar"
+                                                      asp-route-id="@c.IdCita"
+                                                      method="post"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('¿Deseas cancelar esta cita?');">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                        <i class="fa-solid fa-xmark me-1"></i>
+                                                        Cancelar
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">
+                                                Sin acciones disponibles
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 px-3">
+                    <i class="fa-solid fa-calendar-xmark text-secondary display-4 mb-3"></i>
+                    <h5 class="fw-bold">Todavía no tienes citas registradas</h5>
+                    <p class="text-muted">
+                        Puedes programar tu primera cita utilizando el botón
+                        «Agendar nueva cita».
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
