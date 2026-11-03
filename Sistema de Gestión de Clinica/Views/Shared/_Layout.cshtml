@@ -15,7 +15,7 @@
 
     <!-- BARRA SUPERIOR (HEADER GLOBAL) -->
     <header class="sticky-top navbar-custom shadow-sm text-white">
-        <div class="d-flex align-items-center justify-content-between px-3 py-2">
+        <div class="d-flex align-items-center justify-content-between px-3 py-3" style="min-height: 85px;">
 
             <!-- Marca y Botón para desplegar Menú Sidebar -->
             <div class="d-flex align-items-center gap-3">
@@ -25,10 +25,16 @@
                         <i class="fa-solid fa-bars fs-5"></i>
                     </button>
                 }
-                <a class="navbar-brand fw-bold text-white mb-0 d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
-                    <i class="fa-solid fa-hospital-user text-info fs-4 animate__animated animate__pulse animate__infinite"></i>
-                    <span>Clínica Médica</span>
+
+                <a class="navbar-brand fw-bold text-white mb-0 d-flex align-items-center gap-2"
+                   asp-controller="Home"
+                   asp-action="Index">
+
+                    <i class="fa-solid fa-hospital text-info fs-3 animate__animated animate__pulse animate__infinite"></i>
+
+                    <span class="fs-4">Clínica Médica</span>
                 </a>
+
             </div>
 
             <!-- Centro de Notificaciones & Estado de Usuario -->

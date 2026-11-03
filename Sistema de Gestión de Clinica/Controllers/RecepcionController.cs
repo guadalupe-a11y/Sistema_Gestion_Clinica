@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
+using Sistema_Gestión_Clinica.Services;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
@@ -223,9 +225,16 @@ namespace Sistema_Gestión_Clinica.Controllers
                 {
                     IdRol = rolPaciente.IdRol,
                     Correo = Correo,
-                    Contrasena = Contrasena,
                     Activo = true
                 };
+
+                //Proteger la contraseña del paciente nuevo
+                var passwordHasher = new PasswordHasher<Usuario>();
+
+                usuario.PasswordHash = passwordHasher.HashPassword(
+                    usuario,
+                    Contrasena!
+                );
 
                 _context.Usuario.Add(usuario);
                 await _context.SaveChangesAsync();
@@ -286,12 +295,8 @@ namespace Sistema_Gestión_Clinica.Controllers
 
             if (tieneHorario && !citaOcupada)
             {
-                string codigoTurno;
-                do
-                {
-                    codigoTurno = $"W{ahora:HHmmss}{Random.Shared.Next(10, 99)}";
-                }
-                while (await _context.Cita.AnyAsync(c => c.CodigoTurno == codigoTurno));
+                string codigoTurno =
+                await CodigoTurnoService.GenerarAsync(_context);
 
                 var cita = new Cita
                 {
