@@ -1,54 +1,37 @@
 ﻿@model Sistema_Gestión_Clinica.ViewModels.AgendarCitaViewModel
 @{
     ViewData["Title"] = "Reprogramar cita";
+    var horaTxt = Model.Hora.ToString(@"hh\:mm");
+    var hoyTxt = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 <h2>Reprogramar cita</h2>
 <div asp-validation-summary="All" class="text-danger"></div>
 
-<form asp-action="Reprogramar" method="post">
+<form asp-action="Reprogramar" method="post" id="formReprogramar"
+      data-hora="@horaTxt" data-id-cita="@Model.IdCita" data-id-medico="@Model.IdMedico">
     <input type="hidden" asp-for="IdCita" />
     <input type="hidden" asp-for="IdMedico" />
     <input type="hidden" asp-for="IdEspecialidad" />
 
     <div class="mb-3">
         <label asp-for="Fecha"></label>
-        <input asp-for="Fecha" type="date" class="form-control" />
+        <input asp-for="Fecha" id="FechaRep" type="date" class="form-control" min="@hoyTxt" />
+        <span asp-validation-for="Fecha" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="Hora"></label>
-        <select asp-for="Hora" class="form-control">
-            <option value="">-- Seleccione --</option>
-            <option value="08:00">08:00 AM</option>
-            <option value="08:30">08:30 AM</option>
-            <option value="09:00">09:00 AM</option>
-            <option value="09:30">09:30 AM</option>
-            <option value="10:00">10:00 AM</option>
-            <option value="10:30">10:30 AM</option>
-            <option value="11:00">11:00 AM</option>
-            <option value="11:30">11:30 AM</option>
-            <option value="12:00">12:00 PM</option>
-            <option value="12:30">12:30 PM</option>
-            <option value="13:00">01:00 PM</option>
-            <option value="13:30">01:30 PM</option>
-            <option value="14:00">02:00 PM</option>
-            <option value="14:30">02:30 PM</option>
-            <option value="15:00">03:00 PM</option>
-            <option value="15:30">03:30 PM</option>
-            <option value="16:00">04:00 PM</option>
-            <option value="16:30">04:30 PM</option>
-            <option value="17:00">05:00 PM</option>
-            <option value="17:30">05:30 PM</option>
-            <option value="18:00">06:00 PM</option>
-            <option value="18:30">06:30 PM</option>
-            <option value="19:00">07:00 PM</option>
+        <select asp-for="Hora" id="HoraRep" class="form-control">
+            <option value="">-- Seleccione una fecha --</option>
         </select>
+        <span asp-validation-for="Hora" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="Motivo"></label>
         <textarea asp-for="Motivo" class="form-control"></textarea>
+        <span asp-validation-for="Motivo" class="text-danger"></span>
     </div>
 
     <button class="btn btn-primary">Guardar cambios</button>
@@ -57,4 +40,47 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var form = document.getElementById('formReprogramar');
+            var inpFecha = document.getElementById('FechaRep');
+            var selHora = document.getElementById('HoraRep');
+
+            if (!(form instanceof HTMLFormElement) ||
+                !(inpFecha instanceof HTMLInputElement) ||
+                !(selHora instanceof HTMLSelectElement)) return;
+
+            var idMedico = form.getAttribute('data-id-medico') || '0';
+            var idCita = form.getAttribute('data-id-cita') || '0';
+            var horaInicial = form.getAttribute('data-hora') || '';
+
+            function resetHora(texto = '') {
+                selHora.innerHTML = '';
+                selHora.add(new Option(texto, ''));
+            }
+
+            async function cargarHoras(horaSeleccionada = '') {
+                resetHora('-- Seleccione --');
+                if (!inpFecha.value) return;
+
+                var url = '/Paciente/GetHorasDisponibles?idMedico=' + idMedico +
+                    '&fecha=' + inpFecha.value + '&idCita=' + idCita;
+                var r = await fetch(url);
+                var data = await r.json();
+
+                if (data.length === 0) {
+                    resetHora('Sin horarios disponibles ese día');
+                    return;
+                }
+                for (var i = 0; i < data.length; i++) {
+                    var hora = data[i];
+                    selHora.add(new Option(hora.texto, hora.valor));
+                }
+                if (horaSeleccionada) selHora.value = horaSeleccionada;
+            }
+
+            inpFecha.addEventListener('change', function () { cargarHoras(''); });
+            document.addEventListener('DOMContentLoaded', function () { cargarHoras(horaInicial); });
+        })();
+    </script>
 }
