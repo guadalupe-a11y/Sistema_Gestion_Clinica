@@ -50,7 +50,7 @@
                             @foreach (var item in historial)
                             {
                                 <tr>
-                                    <td>@item.FechaAtencion.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td>Dr. @item.Cita?.Medico?.Nombre @item.Cita?.Medico?.Apellido</td>
                                     <td>@(item.Diagnostico ?? "Sin diagnóstico registrado")</td>
                                     <td>
