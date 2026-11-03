@@ -9,7 +9,7 @@ using System.Security.Claims;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
-    [Authorize] // <--- ESTO BLOQUEA EL ACCESO A USUARIOS NO AUTENTICADOS
+    [Authorize]
     public class PacienteController : Controller
     {
         private readonly SistemaDeGestionDB _context;
@@ -53,8 +53,14 @@ namespace Sistema_Gestión_Clinica.Controllers
                     "La cuenta no tiene un paciente asociado."
                 );
             }
+feature/portal-paciente
+            catch { }
+            var primero = _context.Paciente.Select(p => (int?)p.IdPaciente).FirstOrDefault();
+            return primero ?? 2;
+
 
             return idPaciente.Value;
+ main
         }
 
 
@@ -114,7 +120,6 @@ namespace Sistema_Gestión_Clinica.Controllers
                     return View(vm);
                 }
 
-                // CORREGIDO: acepta "Agendada" o "Programada", el que exista
                 var estado = await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Agendada")
                     ?? await _context.EstadoCita.FirstOrDefaultAsync(e => e.NombreEstado == "Programada");
                 if (estado == null)
@@ -143,7 +148,6 @@ namespace Sistema_Gestión_Clinica.Controllers
             catch (Exception ex)
             {
                 await CargarListas();
-                // CORREGIDO: ahora sí te muestra el error real, no solo "saving entity changes"
                 var real = ex.InnerException?.Message ?? ex.Message;
                 ModelState.AddModelError("", "Ocurrió un error al agendar la cita: " + real);
                 return View(vm);
@@ -334,17 +338,20 @@ namespace Sistema_Gestión_Clinica.Controllers
             var fechaHora = vm.Fecha.Date + vm.Hora;
             if (fechaHora <= DateTime.Now) return "No puede agendar en una fecha u hora pasada.";
 
-            int dia = (int)vm.Fecha.DayOfWeek;
+            // CORREGIDO: En la base DiaSemana es 1=Lunes, 2=Martes, 3=Miercoles, 4=Jueves, 5=Viernes, 6=Sabado, 7=Domingo
+            // En C# DayOfWeek es 0=Domingo, 1=Lunes... 6=Sabado, por eso hay que convertir el Domingo a 7
+            int dia = vm.Fecha.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)vm.Fecha.DayOfWeek;
+
             bool dentroHorario = await _context.HorarioMedico.AnyAsync(h =>
                 h.IdMedico == vm.IdMedico && h.DiaSemana == dia &&
                 vm.Hora >= h.HoraInicio && vm.Hora < h.HoraFin);
-            if (!dentroHorario) return "El médico no atiende en ese día u hora.";
+            if (!dentroHorario) return "El médico no atiende en ese día u hora. Verifique si es turno de día (08:00-16:00) o de noche (16:00-22:00).";
 
             var idCancelada = await _context.EstadoCita.Where(e => e.NombreEstado == "Cancelada").Select(e => (int?)e.IdEstadoCita).FirstOrDefaultAsync();
             bool ocupado = await _context.Cita.AnyAsync(c =>
                 c.IdMedico == vm.IdMedico && c.FechaHora == fechaHora &&
                 c.IdEstadoCita != idCancelada && c.IdCita != vm.IdCita);
-            if (ocupado) return "Ese horario ya está ocupado. Elija otro o únase a la lista de espera.";
+            if (ocupado) return "Ese horario ya está ocupado. Elija otra hora o el otro doctor de la especialidad.";
             return null;
         }
 
@@ -357,8 +364,8 @@ namespace Sistema_Gestión_Clinica.Controllers
         {
             try
             {
-                ViewBag.Especialidades = await _context.Especialidad.ToListAsync();
-                ViewBag.Medicos = await _context.Medico.Include(m => m.Especialidad).ToListAsync();
+                ViewBag.Especialidades = await _context.Especialidad.OrderBy(e => e.NombreEspecialidad).ToListAsync();
+                ViewBag.Medicos = await _context.Medico.Include(m => m.Especialidad).OrderBy(m => m.Nombre).ThenBy(m => m.Apellido).ToListAsync();
             }
             catch
             {
@@ -367,13 +374,10 @@ namespace Sistema_Gestión_Clinica.Controllers
             }
         }
 
-
-        // GET: Paciente/ObtenerFilaVirtual/5
         [HttpGet]
         public async Task<IActionResult> ObtenerFilaVirtual(int id)
         {
-            var modelo =
-                await _filaVirtualService.ObtenerEstadoFilaAsync(id);
+            var modelo = await _filaVirtualService.ObtenerEstadoFilaAsync(id);
 
             if (modelo == null)
             {
@@ -386,11 +390,9 @@ namespace Sistema_Gestión_Clinica.Controllers
             return Json(new
             {
                 pacientesAdelante = modelo.PacientesAdelante,
-                tiempoEstimadoMinutos =
-                    modelo.TiempoEstimadoMinutos,
+                tiempoEstimadoMinutos = modelo.TiempoEstimadoMinutos,
                 estadoActual = modelo.EstadoActual
             });
         }
-
     }
 }
