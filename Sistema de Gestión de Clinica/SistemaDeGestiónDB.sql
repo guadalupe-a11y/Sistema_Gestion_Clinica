@@ -331,3 +331,122 @@ select * from Paciente
 select * from RegistroAtencion
 select * from Usuario
 
+DECLARE @IdRolMedico INT = (SELECT TOP 1 IdRol FROM Rol WHERE NombreRol LIKE '%Medic%');
+DECLARE @IdUser INT, @IdEsp INT;
+
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Cardiología' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Cardiología');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Pediatría' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Pediatría');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Dermatología' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Dermatología');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Neurología' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Neurología');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Oftalmología' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Oftalmología');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Ginecología' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Ginecología');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Traumatología' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Traumatología');
+INSERT INTO Especialidad (NombreEspecialidad) SELECT 'Psiquiatría' WHERE NOT EXISTS (SELECT 1 FROM Especialidad WHERE NombreEspecialidad='Psiquiatría');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Cardiología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='carlos.mendoza@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'carlos.mendoza@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='carlos.mendoza@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Carlos', 'Mendoza');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Cardiología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='ana.rivas@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'ana.rivas@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='ana.rivas@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Ana', 'Rivas');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Pediatría';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='luis.hernandez@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'luis.hernandez@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='luis.hernandez@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Luis', 'Hernández');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Pediatría';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='sofia.morales@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'sofia.morales@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='sofia.morales@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Sofía', 'Morales');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Dermatología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='elena.cruz@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'elena.cruz@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='elena.cruz@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Elena', 'Cruz');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Dermatología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='mario.fuentes@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'mario.fuentes@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='mario.fuentes@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Mario', 'Fuentes');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Neurología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='jorge.castillo@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'jorge.castillo@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='jorge.castillo@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Jorge', 'Castillo');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Neurología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='paola.vega@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'paola.vega@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='paola.vega@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Paola', 'Vega');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Oftalmología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='ricardo.pena@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'ricardo.pena@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='ricardo.pena@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Ricardo', 'Peña');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Oftalmología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='carmen.lopez@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'carmen.lopez@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='carmen.lopez@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Carmen', 'López');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Ginecología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='laura.torres@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'laura.torres@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='laura.torres@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Laura', 'Torres');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Ginecología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='marta.jimenez@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'marta.jimenez@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='marta.jimenez@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Marta', 'Jiménez');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Traumatología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='andres.salazar@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'andres.salazar@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='andres.salazar@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Andrés', 'Salazar');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Traumatología';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='fernando.diaz@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'fernando.diaz@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='fernando.diaz@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Fernando', 'Díaz');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Psiquiatría';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='gabriela.ortiz@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'gabriela.ortiz@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='gabriela.ortiz@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Gabriela', 'Ortiz');
+
+SELECT @IdEsp = IdEspecialidad FROM Especialidad WHERE NombreEspecialidad='Psiquiatría';
+IF NOT EXISTS (SELECT 1 FROM Usuario WHERE Correo='pablo.ramirez@clinica.com') INSERT INTO Usuario (IdRol, Correo, PasswordHash, Activo) VALUES (@IdRolMedico, 'pablo.ramirez@clinica.com', '123456', 1);
+SELECT @IdUser = IdUsuario FROM Usuario WHERE Correo='pablo.ramirez@clinica.com';
+IF NOT EXISTS (SELECT 1 FROM Medico WHERE IdUsuario=@IdUser) INSERT INTO Medico (IdUsuario, IdEspecialidad, IdConsultorio, Nombre, Apellido) VALUES (@IdUser, @IdEsp, 1, 'Pablo', 'Ramírez');
+
+DELETE FROM HorarioMedico WHERE IdMedico IN (SELECT IdMedico FROM Medico WHERE Nombre IN ('Carlos','Luis','Elena','Jorge','Ricardo','Laura','Andrés','Gabriela','Ana','Sofía','Mario','Paola','Carmen','Marta','Fernando','Pablo'));
+
+INSERT INTO HorarioMedico (IdMedico, DiaSemana, HoraInicio, HoraFin)
+SELECT IdMedico, d.Dia, '08:00', '16:00' FROM Medico CROSS JOIN (VALUES (1),(2),(3),(4),(5)) AS d(Dia)
+WHERE Nombre IN ('Carlos','Luis','Elena','Jorge','Ricardo','Laura','Andrés','Gabriela');
+
+INSERT INTO HorarioMedico (IdMedico, DiaSemana, HoraInicio, HoraFin)
+SELECT IdMedico, d.Dia, '16:00', '22:00' FROM Medico CROSS JOIN (VALUES (1),(2),(3),(4),(5)) AS d(Dia)
+WHERE Nombre IN ('Ana','Sofía','Mario','Paola','Carmen','Marta','Fernando','Pablo');
+
+INSERT INTO HorarioMedico (IdMedico, DiaSemana, HoraInicio, HoraFin)
+SELECT IdMedico, 6, '08:00', '13:00' FROM Medico WHERE Nombre IN ('Carlos','Ana','Luis','Sofía');
+
+
+
+
+USE [SistemaDeGestiónDB];
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.sequences WHERE name = 'SecuenciaTurnos' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE SEQUENCE dbo.SecuenciaTurnos
+        AS BIGINT
+        START WITH 1
+        INCREMENT BY 1;
+END
+GO

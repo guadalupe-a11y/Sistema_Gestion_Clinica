@@ -3,15 +3,18 @@
 @{
     ViewData["Title"] = "Agendar cita";
     var especialidades = ViewBag.Especialidades as IEnumerable<Especialidad> ?? new List<Especialidad>();
-    var medicos = ViewBag.Medicos as IEnumerable<Medico> ?? new List<Medico>();
+    var todosMedicos = ViewBag.Medicos as IEnumerable<Medico> ?? new List<Medico>();
+    var medicos = todosMedicos.Where(m => Model.IdEspecialidad > 0 && m.IdEspecialidad == Model.IdEspecialidad);
+    var horaTxt = Model.Hora.ToString(@"hh\:mm");
+    var hoyTxt = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 <h2>Agendar cita</h2>
 <div asp-validation-summary="All" class="text-danger"></div>
 
-<form asp-action="Agendar" method="post">
+<form asp-action="Agendar" method="post" id="formCita" data-hora="@horaTxt" data-id-cita="@Model.IdCita">
     <div class="mb-3">
-        <label asp-for="IdEspecialidad"></label>
+        <label>Especialidad</label>
         <select asp-for="IdEspecialidad" id="IdEspecialidad" class="form-control">
             <option value="">-- Seleccione --</option>
             @foreach (var e in especialidades)
@@ -23,12 +26,12 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="IdMedico"></label>
+        <label>Médico</label>
         <select asp-for="IdMedico" id="IdMedico" class="form-control">
             <option value="">-- Seleccione --</option>
             @foreach (var m in medicos)
             {
-                <option value="@m.IdMedico" data-esp="@m.IdEspecialidad">@m.Nombre</option>
+                <option value="@m.IdMedico">@m.Nombre @m.Apellido</option>
             }
         </select>
         <span asp-validation-for="IdMedico" class="text-danger"></span>
@@ -36,39 +39,14 @@
 
     <div class="mb-3">
         <label asp-for="Fecha"></label>
-        <input asp-for="Fecha" type="date" class="form-control" />
+        <input asp-for="Fecha" id="Fecha" type="date" class="form-control" min="@hoyTxt" />
         <span asp-validation-for="Fecha" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Hora"></label>
-        <select asp-for="Hora" class="form-control">
-            <option value="">-- Seleccione --</option>
-            <option value="08:00">08:00 AM</option>
-            <option value="08:30">08:30 AM</option>
-            <option value="09:00">09:00 AM</option>
-            <option value="09:30">09:30 AM</option>
-            <option value="10:00">10:00 AM</option>
-            <option value="10:30">10:30 AM</option>
-            <option value="11:00">11:00 AM</option>
-            <option value="11:30">11:30 AM</option>
-            <option value="12:00">12:00 PM</option>
-            <option value="12:30">12:30 PM</option>
-            <option value="13:00">01:00 PM</option>
-            <option value="13:30">01:30 PM</option>
-            <option value="14:00">02:00 PM</option>
-            <option value="14:30">02:30 PM</option>
-            <option value="15:00">03:00 PM</option>
-            <option value="15:30">03:30 PM</option>
-            <option value="16:00">04:00 PM</option>
-            <option value="16:30">04:30 PM</option>
-            <option value="17:00">05:00 PM</option>
-            <option value="17:30">05:30 PM</option>
-            <option value="18:00">06:00 PM</option>
-            <option value="18:30">06:30 PM</option>
-            <option value="19:00">07:00 PM</option>
-            <option value="19:30">07:30 PM</option>
-            <option value="20:00">08:00 PM</option>
+        <label>Hora</label>
+        <select asp-for="Hora" id="Hora" class="form-control">
+            <option value="">-- Seleccione médico y fecha --</option>
         </select>
         <span asp-validation-for="Hora" class="text-danger"></span>
     </div>
@@ -86,14 +64,65 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        document.getElementById('IdEspecialidad').addEventListener('change', function () {
-            var esp = this.value;
-            var medicoSelect = document.getElementById('IdMedico');
-            medicoSelect.value = '';
-            Array.from(medicoSelect.options).forEach(function (opt) {
-                if (!opt.value) return;
-                opt.style.display = (!esp || opt.getAttribute('data-esp') === esp) ? '' : 'none';
+        (function () {
+            var form = document.getElementById('formCita');
+            var selEsp = document.getElementById('IdEspecialidad');
+            var selMed = document.getElementById('IdMedico');
+            var inpFecha = document.getElementById('Fecha');
+            var selHora = document.getElementById('Hora');
+
+            if (!(form instanceof HTMLFormElement) ||
+                !(selEsp instanceof HTMLSelectElement) ||
+                !(selMed instanceof HTMLSelectElement) ||
+                !(inpFecha instanceof HTMLInputElement) ||
+                !(selHora instanceof HTMLSelectElement)) return;
+
+            var horaInicial = form.getAttribute('data-hora') || '';
+            var idCita = form.getAttribute('data-id-cita') || '0';
+
+            function resetSelect(sel = document.createElement('select'), texto = '') {
+                sel.innerHTML = '';
+                sel.add(new Option(texto, ''));
+            }
+
+            async function cargarMedicos() {
+                resetSelect(selMed, '-- Seleccione --');
+                resetSelect(selHora, '-- Seleccione médico y fecha --');
+                if (!selEsp.value) return;
+                var r = await fetch('/Paciente/GetMedicos?idEspecialidad=' + selEsp.value);
+                var data = await r.json();
+                for (var i = 0; i < data.length; i++) {
+                    var medico = data[i];
+                    selMed.add(new Option(medico.nombre, medico.idMedico));
+                }
+            }
+
+            async function cargarHoras(horaSeleccionada = '') {
+                resetSelect(selHora, '-- Seleccione --');
+                if (!selMed.value || !inpFecha.value) return;
+                var url = '/Paciente/GetHorasDisponibles?idMedico=' + selMed.value + '&fecha=' + inpFecha.value;
+                if (idCita !== '0') url += '&idCita=' + idCita;
+                var r = await fetch(url);
+                var data = await r.json();
+                if (data.length === 0) {
+                    resetSelect(selHora, 'Sin horarios disponibles ese día');
+                    return;
+                }
+                for (var i = 0; i < data.length; i++) {
+                    var hora = data[i];
+                    selHora.add(new Option(hora.texto, hora.valor));
+                }
+                if (horaSeleccionada && horaSeleccionada !== '00:00') selHora.value = horaSeleccionada;
+            }
+
+            selEsp.addEventListener('change', function () { cargarMedicos(); });
+            selMed.addEventListener('change', function () { cargarHoras(''); });
+            inpFecha.addEventListener('change', function () { cargarHoras(''); });
+
+            // Si vuelve del servidor con un error, conserva lo elegido
+            document.addEventListener('DOMContentLoaded', function () {
+                if (selMed.value && inpFecha.value) cargarHoras(horaInicial);
             });
-        });
+        })();
     </script>
 }
