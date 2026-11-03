@@ -5,6 +5,7 @@ using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
 using Sistema_Gestión_Clinica.Services;
 using Sistema_Gestión_Clinica.ViewModels;
+using System.Security.Claims;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
@@ -25,39 +26,43 @@ namespace Sistema_Gestión_Clinica.Controllers
             _filaVirtualService = filaVirtualService;
         }
 
+
         private int ObtenerIdPaciente()
         {
-            try
+            // Obtener el identificador del usuario que inició sesión
+            var idUsuarioClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            if (!int.TryParse(idUsuarioClaim, out int idUsuario))
             {
-                var enSesion = HttpContext.Session.GetInt32("IdPaciente");
-                if (enSesion.HasValue && enSesion.Value > 0) return enSesion.Value;
-
-                var idUsuarioSesion = HttpContext.Session.GetInt32("IdUsuario");
-                if (idUsuarioSesion.HasValue)
-                {
-                    var idPac = _context.Paciente
-                        .Where(p => p.IdUsuario == idUsuarioSesion.Value)
-                        .Select(p => (int?)p.IdPaciente)
-                        .FirstOrDefault();
-                    if (idPac.HasValue) return idPac.Value;
-                }
-
-                var claim = User.FindFirst("IdPaciente")?.Value
-                    ?? User.FindFirst("IdUsuario")?.Value
-                    ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(claim, out int idClaim))
-                {
-                    var idPac2 = _context.Paciente
-                        .Where(p => p.IdUsuario == idClaim || p.IdPaciente == idClaim)
-                        .Select(p => (int?)p.IdPaciente)
-                        .FirstOrDefault();
-                    if (idPac2.HasValue) return idPac2.Value;
-                }
+                throw new UnauthorizedAccessException(
+                    "No se pudo identificar al usuario autenticado."
+                );
             }
+
+            // Buscar el paciente asociado con ese usuario
+            var idPaciente = _context.Paciente
+                .Where(p => p.IdUsuario == idUsuario)
+                .Select(p => (int?)p.IdPaciente)
+                .FirstOrDefault();
+
+            if (!idPaciente.HasValue)
+            {
+                throw new UnauthorizedAccessException(
+                    "La cuenta no tiene un paciente asociado."
+                );
+            }
+feature/portal-paciente
             catch { }
             var primero = _context.Paciente.Select(p => (int?)p.IdPaciente).FirstOrDefault();
             return primero ?? 2;
+
+
+            return idPaciente.Value;
+ main
         }
+
 
         public IActionResult Index()
         {
@@ -352,15 +357,7 @@ namespace Sistema_Gestión_Clinica.Controllers
 
         private async Task<string> GenerarCodigo(DateTime fecha)
         {
-            int numero = await _context.Cita.CountAsync(c => c.FechaHora.Date == fecha.Date) + 1;
-            string codigo;
-            do
-            {
-                codigo = $"T-{numero:000}";
-                numero++;
-            }
-            while (await _context.Cita.AnyAsync(c => c.FechaHora.Date == fecha.Date && c.CodigoTurno == codigo));
-            return codigo;
+            return await CodigoTurnoService.GenerarAsync(_context);
         }
 
         private async Task CargarListas()
