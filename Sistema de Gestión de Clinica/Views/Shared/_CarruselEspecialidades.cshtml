@@ -1,0 +1,722 @@
+﻿@{
+    var items = new[]
+    {
+        new { Slug = "cardiologia", Nombre = "Cardiología", Icono = "fa-heart-pulse", G1 = "#ef4444", G2 = "#f97316",
+              Resumen = "Cuidamos tu corazón y tu circulación con diagnóstico oportuno.",
+              Detalle = "Atiende las enfermedades del corazón y de los vasos sanguíneos: evaluación de la presión arterial, el colesterol y el ritmo cardíaco, además de la prevención de enfermedades cardiovasculares.",
+              Cuando = new[] { "Presión arterial alta o fluctuante", "Palpitaciones o latidos irregulares", "Falta de aire al hacer esfuerzo", "Antecedentes familiares de enfermedad del corazón" } },
+
+        new { Slug = "pediatria", Nombre = "Pediatría", Icono = "fa-baby", G1 = "#06b6d4", G2 = "#3b82f6",
+              Resumen = "Acompañamos el crecimiento de tus hijos, desde recién nacidos hasta la adolescencia.",
+              Detalle = "Control del crecimiento y el desarrollo, esquema de vacunación y atención de las enfermedades más comunes en bebés, niños y adolescentes.",
+              Cuando = new[] { "Controles periódicos del niño sano", "Fiebre, tos o malestar que no mejora", "Dudas sobre alimentación o desarrollo", "Actualización del carné de vacunas" } },
+
+        new { Slug = "dermatologia", Nombre = "Dermatología", Icono = "fa-hand-dots", G1 = "#ec4899", G2 = "#f43f5e",
+              Resumen = "Salud y bienestar para tu piel, cabello y uñas.",
+              Detalle = "Diagnóstico y tratamiento de las enfermedades de la piel, el cabello y las uñas, además de la revisión de lunares y la orientación para el cuidado diario.",
+              Cuando = new[] { "Acné, manchas o erupciones", "Alergias o picazón persistente", "Lunares que cambian de forma o de color", "Caída excesiva del cabello" } },
+
+        new { Slug = "neurologia", Nombre = "Neurología", Icono = "fa-brain", G1 = "#8b5cf6", G2 = "#6366f1",
+              Resumen = "Evaluamos el cerebro, la médula y los nervios con enfoque integral.",
+              Detalle = "Estudia y trata los trastornos del sistema nervioso, como los dolores de cabeza, los mareos, las alteraciones del sueño y los problemas de memoria o de movimiento.",
+              Cuando = new[] { "Dolores de cabeza frecuentes o intensos", "Mareos o pérdida del equilibrio", "Hormigueo o debilidad en brazos y piernas", "Olvidos o cambios en la memoria" } },
+
+        new { Slug = "oftalmologia", Nombre = "Oftalmología", Icono = "fa-eye", G1 = "#10b981", G2 = "#14b8a6",
+              Resumen = "Cuidamos tu visión con exámenes y tratamientos especializados.",
+              Detalle = "Evaluación de la agudeza visual y de la salud del ojo, detección temprana de glaucoma, cataratas y otras enfermedades, y control de la graduación de los lentes.",
+              Cuando = new[] { "Visión borrosa de lejos o de cerca", "Ojo rojo, dolor o ardor", "Cansancio visual por el uso de pantallas", "Control anual, sobre todo con diabetes o antecedentes familiares" } },
+
+        new { Slug = "ginecologia", Nombre = "Ginecología", Icono = "fa-venus", G1 = "#d946ef", G2 = "#a855f7",
+              Resumen = "Atención integral de la salud femenina en cada etapa de la vida.",
+              Detalle = "Control preventivo de la salud reproductiva de la mujer, seguimiento del ciclo menstrual, planificación familiar y acompañamiento durante el embarazo.",
+              Cuando = new[] { "Chequeo anual y citología", "Alteraciones del ciclo menstrual", "Planificación familiar o embarazo", "Molestias o dolor pélvico" } },
+
+        new { Slug = "traumatologia", Nombre = "Traumatología", Icono = "fa-bone", G1 = "#f59e0b", G2 = "#ea580c",
+              Resumen = "Huesos, músculos y articulaciones para que vuelvas a moverte con confianza.",
+              Detalle = "Diagnóstico y tratamiento de las lesiones del aparato locomotor: fracturas, esguinces, dolor de espalda y lesiones deportivas, con orientación para tu recuperación.",
+              Cuando = new[] { "Golpes, caídas o sospecha de fractura", "Dolor de rodilla, hombro o espalda", "Esguinces o lesiones deportivas", "Limitación del movimiento de una articulación" } },
+
+        new { Slug = "psiquiatria", Nombre = "Psiquiatría", Icono = "fa-hand-holding-heart", G1 = "#0ea5e9", G2 = "#6366f1",
+              Resumen = "Un espacio seguro para cuidar tu salud mental y emocional.",
+              Detalle = "Evaluación y tratamiento de los trastornos emocionales y de conducta, en un ambiente de respeto y confidencialidad.",
+              Cuando = new[] { "Ansiedad o preocupación constante", "Tristeza o desánimo prolongado", "Problemas para dormir", "Estrés que afecta tu día a día" } }
+    };
+}
+
+<section class="cm-wrap" id="cmCarrusel" aria-label="Nuestras especialidades">
+
+    <div class="cm-label">
+        <i class="fa-solid fa-stethoscope"></i> Nuestras especialidades
+        <span class="cm-count" id="cmCount"></span>
+    </div>
+
+    @for (int n = 0; n < items.Length; n++)
+    {
+        var it = items[n];
+        var estilo = "--g1:" + it.G1 + ";--g2:" + it.G2;
+        var activa = n == 0 ? " active" : "";
+
+        <article class="cm-slide@(activa)" style="@estilo" data-nombre="@it.Nombre" data-icono="@it.Icono"
+                 tabindex="0" role="button" aria-label="Ver información de @it.Nombre">
+            <div class="cm-bg">
+                <img src="/img/especialidades/@(it.Slug).jpg" alt="@it.Nombre" onerror="this.remove()" />
+            </div>
+            <i class="fa-solid @it.Icono cm-watermark"></i>
+
+            <div class="cm-caption">
+                <span class="cm-chip"><i class="fa-solid @it.Icono"></i> Especialidad</span>
+                <h3>@it.Nombre</h3>
+                <p>@it.Resumen</p>
+                <span class="cm-more">Ver información <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+
+            <div class="cm-detalle" hidden>
+                <p>@it.Detalle</p>
+                <h6>¿Cuándo consultar?</h6>
+                <ul>
+                    @foreach (var c in it.Cuando)
+                    {
+                        <li>@c</li>
+                    }
+                </ul>
+            </div>
+        </article>
+    }
+
+    <button type="button" class="cm-nav cm-prev" aria-label="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+    <button type="button" class="cm-nav cm-next" aria-label="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+    <button type="button" class="cm-nav cm-play" id="cmPlay" aria-label="Pausar"><i class="fa-solid fa-pause"></i></button>
+
+    <div class="cm-dots">
+        @for (int n = 0; n < items.Length; n++)
+        {
+            <button type="button" class="cm-dot@(n == 0 ? " activo" : "")" data-i="@n" title="@items[n].Nombre" aria-label="@items[n].Nombre">
+                <i class="fa-solid @items[n].Icono"></i>
+            </button>
+        }
+    </div>
+
+    <div class="cm-bar"><span></span></div>
+</section>
+
+<!-- VENTANA CON LA INFORMACIÓN DE LA ESPECIALIDAD -->
+<div class="cm-modal" id="cmModal" role="dialog" aria-modal="true" aria-labelledby="cmTitulo">
+    <div class="cm-card">
+        <div class="cm-card-head" id="cmHead">
+            <div class="cm-head-img" id="cmHeadImg"></div>
+            <button type="button" class="cm-close" id="cmClose" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+            <div class="cm-head-title">
+                <i class="fa-solid" id="cmIcono"></i>
+                <h3 id="cmTitulo"></h3>
+            </div>
+        </div>
+        <div class="cm-card-body">
+            <p class="cm-lead" id="cmLead"></p>
+            <div id="cmDetalle"></div>
+            <div class="cm-actions">
+                <a class="cm-btn" asp-controller="Paciente" asp-action="Agendar"><i class="fa-solid fa-calendar-plus"></i> Agendar cita</a>
+                <button type="button" class="cm-btn cm-btn-sec" id="cmCerrar2">Cerrar</button>
+            </div>
+            <p class="cm-aviso">Esta información es orientativa y no reemplaza una consulta médica. En una emergencia, acude de inmediato al servicio de urgencias.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cm-wrap {
+        position: relative;
+        height: 430px;
+        margin: 32px 0;
+        border-radius: 22px;
+        overflow: hidden;
+        background: #0b1020;
+        box-shadow: 0 18px 45px rgba(15,23,42,.28);
+    }
+
+    .cm-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        visibility: hidden;
+        cursor: pointer;
+        color: #fff;
+        background: linear-gradient(135deg, var(--g1), var(--g2));
+        transition: opacity .9s ease, visibility .9s;
+        outline: none;
+    }
+
+        .cm-slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 1;
+        }
+
+        .cm-slide::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(to top, rgba(2,6,23,.9) 0%, rgba(2,6,23,.5) 45%, rgba(2,6,23,.1) 100%);
+        }
+
+    .cm-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+    }
+
+        .cm-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .cm-slide.active .cm-bg img {
+        animation: cmZoom 9s ease-out forwards;
+    }
+
+    .cm-watermark {
+        position: absolute;
+        z-index: 2;
+        right: 7%;
+        top: 46%;
+        transform: translateY(-50%);
+        font-size: 11rem;
+        opacity: .16;
+    }
+
+    .cm-caption {
+        position: absolute;
+        z-index: 3;
+        left: 44px;
+        bottom: 60px;
+        max-width: 560px;
+    }
+
+        .cm-caption h3 {
+            margin: 10px 0 6px;
+            font-size: 2.4rem;
+            font-weight: 700;
+            text-shadow: 0 2px 12px rgba(0,0,0,.45);
+        }
+
+        .cm-caption p {
+            margin: 0 0 14px;
+            font-size: 1.05rem;
+            opacity: .95;
+        }
+
+    .cm-chip {
+        display: inline-block;
+        padding: 5px 12px;
+        font-size: .78rem;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        background: rgba(255,255,255,.18);
+        backdrop-filter: blur(6px);
+    }
+
+    .cm-more {
+        display: inline-block;
+        padding: 8px 18px;
+        font-weight: 600;
+        border-radius: 999px;
+        background: #fff;
+        color: #0f172a;
+        transition: transform .2s ease;
+    }
+
+    .cm-slide:hover .cm-more {
+        transform: translateX(6px);
+    }
+
+    .cm-slide.active .cm-caption > * {
+        animation: cmUp .8s ease both;
+    }
+
+        .cm-slide.active .cm-caption > *:nth-child(2) {
+            animation-delay: .12s;
+        }
+
+        .cm-slide.active .cm-caption > *:nth-child(3) {
+            animation-delay: .24s;
+        }
+
+        .cm-slide.active .cm-caption > *:nth-child(4) {
+            animation-delay: .36s;
+        }
+
+    .cm-label {
+        position: absolute;
+        z-index: 5;
+        top: 18px;
+        left: 22px;
+        padding: 7px 14px;
+        font-size: .85rem;
+        font-weight: 600;
+        color: #fff;
+        border-radius: 999px;
+        background: rgba(2,6,23,.45);
+        backdrop-filter: blur(8px);
+    }
+
+    .cm-count {
+        margin-left: 8px;
+        opacity: .75;
+        font-weight: 500;
+    }
+
+    .cm-nav {
+        position: absolute;
+        z-index: 5;
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 50%;
+        color: #fff;
+        cursor: pointer;
+        background: rgba(2,6,23,.45);
+        backdrop-filter: blur(8px);
+        transition: background .2s ease, transform .2s ease;
+    }
+
+        .cm-nav:hover {
+            background: rgba(255,255,255,.28);
+            transform: scale(1.08);
+        }
+
+    .cm-prev {
+        left: 16px;
+        top: 50%;
+        margin-top: -22px;
+    }
+
+    .cm-next {
+        right: 16px;
+        top: 50%;
+        margin-top: -22px;
+    }
+
+    .cm-play {
+        top: 14px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+    }
+
+    .cm-dots {
+        position: absolute;
+        z-index: 5;
+        right: 22px;
+        bottom: 22px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .cm-dot {
+        width: 36px;
+        height: 36px;
+        border: 2px solid transparent;
+        border-radius: 50%;
+        color: #fff;
+        font-size: .85rem;
+        cursor: pointer;
+        background: rgba(255,255,255,.18);
+        transition: all .25s ease;
+    }
+
+        .cm-dot:hover {
+            background: rgba(255,255,255,.35);
+        }
+
+        .cm-dot.activo {
+            background: #fff;
+            color: #0f172a;
+            border-color: #fff;
+            transform: scale(1.12);
+        }
+
+    .cm-bar {
+        position: absolute;
+        z-index: 5;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 4px;
+        background: rgba(255,255,255,.18);
+    }
+
+        .cm-bar span {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #38bdf8, #a78bfa);
+        }
+
+            .cm-bar span.run {
+                animation: cmFill 6s linear forwards;
+            }
+
+    .cm-wrap.paused .cm-bar span, .cm-wrap.paused .cm-bg img {
+        animation-play-state: paused;
+    }
+
+    /* Ventana de información */
+    .cm-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(2,6,23,.7);
+        backdrop-filter: blur(6px);
+    }
+
+        .cm-modal.open {
+            display: flex;
+            animation: cmFade .25s ease;
+        }
+
+    .cm-card {
+        width: min(720px, 100%);
+        max-height: 92vh;
+        overflow: auto;
+        border-radius: 20px;
+        background: #fff;
+        color: #1e293b;
+        box-shadow: 0 30px 80px rgba(0,0,0,.45);
+        animation: cmPop .3s ease;
+    }
+
+    .cm-card-head {
+        position: relative;
+        height: 210px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--g1), var(--g2));
+    }
+
+    .cm-head-img, .cm-head-img img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+        .cm-head-img img {
+            object-fit: cover;
+        }
+
+    .cm-card-head::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(2,6,23,.8), rgba(2,6,23,.1));
+    }
+
+    .cm-head-title {
+        position: absolute;
+        z-index: 2;
+        left: 26px;
+        bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+        .cm-head-title i {
+            font-size: 1.8rem;
+        }
+
+        .cm-head-title h3 {
+            margin: 0;
+            font-size: 1.9rem;
+            font-weight: 700;
+        }
+
+    .cm-close {
+        position: absolute;
+        z-index: 3;
+        top: 14px;
+        right: 14px;
+        width: 38px;
+        height: 38px;
+        border: 0;
+        border-radius: 50%;
+        color: #fff;
+        cursor: pointer;
+        background: rgba(2,6,23,.5);
+    }
+
+        .cm-close:hover {
+            background: rgba(2,6,23,.8);
+        }
+
+    .cm-card-body {
+        padding: 24px 28px 26px;
+    }
+
+    .cm-lead {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .cm-card-body h6 {
+        margin: 16px 0 8px;
+        font-weight: 700;
+        color: #0d6efd;
+        text-transform: uppercase;
+        font-size: .8rem;
+        letter-spacing: .06em;
+    }
+
+    .cm-card-body ul {
+        padding-left: 20px;
+        margin: 0;
+    }
+
+    .cm-card-body li {
+        margin-bottom: 4px;
+    }
+
+    .cm-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .cm-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 22px;
+        border: 0;
+        border-radius: 999px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        color: #fff;
+        background: linear-gradient(90deg, #1166f5, #08b7d4);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+        .cm-btn:hover {
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(17,102,245,.35);
+        }
+
+    .cm-btn-sec {
+        color: #334155;
+        background: #e2e8f0;
+    }
+
+        .cm-btn-sec:hover {
+            color: #334155;
+            box-shadow: none;
+        }
+
+    .cm-aviso {
+        margin: 16px 0 0;
+        font-size: .78rem;
+        color: #64748b;
+    }
+
+    @@keyframes cmZoom {
+        from {
+            transform: scale(1);
+        }
+
+        to {
+            transform: scale(1.12);
+        }
+    }
+
+    @@keyframes cmUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @@keyframes cmFill {
+        from {
+            width: 0;
+        }
+
+        to {
+            width: 100%;
+        }
+    }
+
+    @@keyframes cmFade {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes cmPop {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .cm-wrap {
+            height: 380px;
+        }
+
+        .cm-caption {
+            left: 20px;
+            right: 20px;
+            bottom: 64px;
+        }
+
+            .cm-caption h3 {
+                font-size: 1.8rem;
+            }
+
+        .cm-watermark {
+            font-size: 6rem;
+            right: 5%;
+        }
+
+        .cm-prev, .cm-next {
+            display: none;
+        }
+
+        .cm-dots {
+            left: 0;
+            right: 0;
+            justify-content: center;
+            bottom: 14px;
+        }
+
+        .cm-dot {
+            width: 30px;
+            height: 30px;
+            font-size: .75rem;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .cm-slide.active .cm-bg img, .cm-slide.active .cm-caption > * {
+            animation: none !important;
+        }
+    }
+</style>
+
+<script>
+    (function () {
+        var wrap = document.getElementById('cmCarrusel');
+        if (!wrap) return;
+
+        var slides = wrap.querySelectorAll('.cm-slide');
+        var dots = wrap.querySelectorAll('.cm-dot');
+        var bar = wrap.querySelector('.cm-bar span');
+        var count = document.getElementById('cmCount');
+        var playBtn = document.getElementById('cmPlay');
+        var modal = document.getElementById('cmModal');
+        var idx = 0, manualPause = false, ultimoFoco = null;
+
+        function dos(n) { return (n < 10 ? '0' : '') + n; }
+
+        function show(i) {
+            idx = (i + slides.length) % slides.length;
+            slides.forEach(function (s, n) { s.classList.toggle('active', n === idx); });
+            dots.forEach(function (d, n) { d.classList.toggle('activo', n === idx); });
+            count.textContent = dos(idx + 1) + ' / ' + dos(slides.length);
+            bar.classList.remove('run');
+            void bar.offsetWidth;          // reinicia la animación de la barra
+            bar.classList.add('run');
+        }
+
+        // Cuando la barra termina de llenarse, pasa a la siguiente especialidad
+        bar.addEventListener('animationend', function () { show(idx + 1); });
+
+        wrap.querySelector('.cm-prev').addEventListener('click', function () { show(idx - 1); });
+        wrap.querySelector('.cm-next').addEventListener('click', function () { show(idx + 1); });
+        dots.forEach(function (d) {
+            d.addEventListener('click', function () { show(parseInt(d.getAttribute('data-i'), 10)); });
+        });
+
+        // Pausa al pasar el mouse
+        wrap.addEventListener('mouseenter', function () { wrap.classList.add('paused'); });
+        wrap.addEventListener('mouseleave', function () {
+            if (!manualPause && !modal.classList.contains('open')) wrap.classList.remove('paused');
+        });
+
+        // Botón pausa / reproducir
+        playBtn.addEventListener('click', function () {
+            manualPause = !manualPause;
+            wrap.classList.toggle('paused', manualPause);
+            playBtn.innerHTML = manualPause ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+            playBtn.setAttribute('aria-label', manualPause ? 'Reproducir' : 'Pausar');
+        });
+
+        // ---------- Ventana de información ----------
+        function abrir(slide) {
+            var head = document.getElementById('cmHead');
+            head.style.setProperty('--g1', slide.style.getPropertyValue('--g1'));
+            head.style.setProperty('--g2', slide.style.getPropertyValue('--g2'));
+
+            var imgBox = document.getElementById('cmHeadImg');
+            imgBox.innerHTML = '';
+            var img = slide.querySelector('.cm-bg img');
+            if (img) imgBox.appendChild(img.cloneNode(false));
+
+            document.getElementById('cmTitulo').textContent = slide.getAttribute('data-nombre');
+            document.getElementById('cmIcono').className = 'fa-solid ' + slide.getAttribute('data-icono');
+            document.getElementById('cmLead').textContent = slide.querySelector('.cm-caption p').textContent;
+            document.getElementById('cmDetalle').innerHTML = slide.querySelector('.cm-detalle').innerHTML;
+
+            ultimoFoco = document.activeElement;
+            modal.classList.add('open');
+            wrap.classList.add('paused');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('cmClose').focus();
+        }
+
+        function cerrar() {
+            modal.classList.remove('open');
+            if (!manualPause) wrap.classList.remove('paused');
+            document.body.style.overflow = '';
+            if (ultimoFoco) ultimoFoco.focus();
+        }
+
+        slides.forEach(function (s) {
+            s.addEventListener('click', function () { abrir(s); });
+            s.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(s); }
+            });
+        });
+
+        document.getElementById('cmClose').addEventListener('click', cerrar);
+        document.getElementById('cmCerrar2').addEventListener('click', cerrar);
+        modal.addEventListener('click', function (e) { if (e.target === modal) cerrar(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal.classList.contains('open')) cerrar();
+        });
+
+        show(0);
+    })();
+</script>
