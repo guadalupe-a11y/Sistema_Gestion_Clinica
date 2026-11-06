@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "Mis citas médicas";
+
+    int total = Model?.Count ?? 0;
+    int proximas = Model?.Count(c => c.EstadoCita?.NombreEstado == "Agendada" && c.FechaHora >= DateTime.Now) ?? 0;
+    int finalizadas = Model?.Count(c => c.EstadoCita?.NombreEstado == "Finalizada") ?? 0;
+    int canceladas = Model?.Count(c => c.EstadoCita?.NombreEstado == "Cancelada") ?? 0;
 }
 
 <div class="container py-4 animate__animated animate__fadeIn">
@@ -22,6 +27,34 @@
             <i class="fa-solid fa-list-check me-1"></i>
             @Model.Count citas registradas
         </span>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card" style="--s1:#2563eb;--s2:#06b6d4;">
+                <i class="fa-solid fa-calendar-days"></i>
+                <div><div class="num">@total</div><div class="lbl">TOTAL DE CITAS</div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card" style="--s1:#f59e0b;--s2:#f97316;">
+                <i class="fa-solid fa-hourglass-half"></i>
+                <div><div class="num">@proximas</div><div class="lbl">PRÓXIMAS</div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card" style="--s1:#10b981;--s2:#14b8a6;">
+                <i class="fa-solid fa-circle-check"></i>
+                <div><div class="num">@finalizadas</div><div class="lbl">FINALIZADAS</div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card" style="--s1:#ef4444;--s2:#ec4899;">
+                <i class="fa-solid fa-ban"></i>
+                <div><div class="num">@canceladas</div><div class="lbl">CANCELADAS</div></div>
+            </div>
+        </div>
     </div>
 
     <!-- MENSAJES -->

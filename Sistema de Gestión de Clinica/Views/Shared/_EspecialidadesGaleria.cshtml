@@ -1,0 +1,98 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@using Sistema_Gestión_Clinica.Models
+@using System.Globalization
+@using System.IO
+@using System.Text
+@inject IWebHostEnvironment Env
+@model IEnumerable<Especialidad>
+@functions {
+    static string Slug(string s)
+    {
+        var d = s.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+        foreach (var ch in d)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark) sb.Append(ch);
+        }
+        return sb.ToString().ToLowerInvariant().Trim().Replace(" ", "-");
+    }
+
+    static string Icono(string slug)
+    {
+        switch (slug)
+        {
+            case "cardiologia": return "fa-heart-pulse";
+            case "pediatria": return "fa-baby";
+            case "dermatologia": return "fa-hand-dots";
+            case "neurologia": return "fa-brain";
+            case "oftalmologia": return "fa-eye";
+            case "ginecologia": return "fa-venus";
+            case "traumatologia": return "fa-bone";
+            case "psiquiatria": return "fa-hand-holding-heart";
+            default: return "fa-stethoscope";
+        }
+    }
+
+    static readonly string[][] Paleta = new string[][]
+    {
+        new string[] { "#ef4444", "#f97316" }, new string[] { "#06b6d4", "#3b82f6" },
+        new string[] { "#ec4899", "#f43f5e" }, new string[] { "#8b5cf6", "#6366f1" },
+        new string[] { "#10b981", "#14b8a6" }, new string[] { "#d946ef", "#a855f7" },
+        new string[] { "#f59e0b", "#eab308" }, new string[] { "#0ea5e9", "#22d3ee" }
+    };
+}
+@{
+    var carpeta = System.IO.Path.Combine(Env.WebRootPath, "img", "especialidades");
+    var exts = new string[] { ".jpg", ".jpeg", ".png", ".webp" };
+    int i = 0;
+}
+
+<div class="esp-grid" id="espGaleria">
+    @foreach (var e in Model)
+    {
+        var slug = Slug(e.NombreEspecialidad);
+        string img = null;
+        foreach (var ext in exts)
+        {
+            if (System.IO.File.Exists(System.IO.Path.Combine(carpeta, slug + ext))) { img = "/img/especialidades/" + slug + ext; break; }
+        }
+        var g = Paleta[i % Paleta.Length];
+        i++;
+        var estilo = "--g1:" + g[0] + ";--g2:" + g[1];
+        var icono = Icono(slug);
+
+        <button type="button" class="esp-card" data-id="@e.IdEspecialidad" style="@estilo">
+            @if (img != null)
+            {
+                <img src="@img" alt="@e.NombreEspecialidad" loading="lazy" />
+            }
+            <i class="fa-solid @icono esp-icon"></i>
+            <span class="esp-name">@e.NombreEspecialidad</span>
+        </button>
+    }
+</div>
+
+<script>
+    (function () {
+        var cont = document.getElementById('espGaleria');
+        function marcar() {
+            var sel = document.getElementById('IdEspecialidad');
+            cont.querySelectorAll('.esp-card').forEach(function (c) {
+                c.classList.toggle('activa', !!sel && c.getAttribute('data-id') === sel.value);
+            });
+        }
+        cont.addEventListener('click', function (e) {
+            var card = e.target.closest('.esp-card');
+            var sel = document.getElementById('IdEspecialidad');
+            if (!card || !sel) return;
+            sel.value = card.getAttribute('data-id');
+            sel.dispatchEvent(new Event('change'));
+            marcar();
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            var sel = document.getElementById('IdEspecialidad');
+            if (sel) sel.addEventListener('change', marcar);
+            marcar();
+        });
+    })();
+</script>
