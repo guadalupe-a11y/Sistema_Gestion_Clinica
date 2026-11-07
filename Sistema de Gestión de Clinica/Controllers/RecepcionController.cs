@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Sistema_Gestión_Clinica.Data;
 using Sistema_Gestión_Clinica.Models;
 using Sistema_Gestión_Clinica.Services;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Sistema_Gestión_Clinica.ViewModels;
 
 namespace Sistema_Gestión_Clinica.Controllers
 {
@@ -16,6 +18,64 @@ namespace Sistema_Gestión_Clinica.Controllers
         public RecepcionController(SistemaDeGestionDB context)
         {
             _context = context;
+        }
+
+
+        // GET: Recepcion/Medicos
+        [Authorize(Roles = "Recepcionista,Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> Medicos()
+        {
+            var model = new MedicosViewModel();
+
+            model.Medicos = await _context.Medico
+                .Include(m => m.Especialidad)
+                .Include(m => m.Consultorio)
+                .ToListAsync();
+
+            model.Especialidades = await _context.Especialidad
+                .Select(e => new SelectListItem
+                {
+                    Value = e.IdEspecialidad.ToString(),
+                    Text = e.NombreEspecialidad
+                })
+                .ToListAsync();
+
+            model.Consultorios = await _context.Consultorio
+                .Select(c => new SelectListItem
+                {
+                    Value = c.IdConsultorio.ToString(),
+                    Text = "Consultorio " + c.NumeroConsultorio
+                })
+                .ToListAsync();
+
+            return View("~/Views/Admin/Medicos.cshtml", model);
+        }
+
+        // GET: Recepcion/Horarios
+        [Authorize(Roles = "Recepcionista,Administrador")]
+        [HttpGet]
+        public async Task<IActionResult> Horarios()
+        {
+            var horarios = await _context.HorarioMedico
+                .Include(h => h.Medico)
+                .ToListAsync();
+
+            var medicos = await _context.Medico
+                .Select(m => new
+                {
+                    m.IdMedico,
+                    NombreCompleto = "Dr/a. " + m.Nombre + " " + m.Apellido
+                })
+                .ToListAsync();
+
+            ViewBag.Medicos = new SelectList(
+                medicos,
+                "IdMedico",
+                "NombreCompleto"
+            );
+
+            return View("~/Views/Admin/Horarios.cshtml", horarios);
         }
 
 
