@@ -81,6 +81,25 @@
 
     </div>
 
+    <!-- ACCESO A PROFESIONALES Y HORARIOS -->
+    <div class="d-flex gap-2 flex-wrap mb-4">
+
+        <a asp-controller="Recepcion"
+           asp-action="Medicos"
+           class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="fa-solid fa-user-doctor me-2"></i>
+            Profesionales
+        </a>
+
+        <a asp-controller="Recepcion"
+           asp-action="Horarios"
+           class="btn btn-info text-white rounded-pill px-4 shadow-sm">
+            <i class="fa-solid fa-calendar-days me-2"></i>
+            Horarios Médicos
+        </a>
+
+    </div>
+
     <!-- PESTAÑAS DE FILTRADO POR ESTADO -->
     <div class="mb-4">
         <div class="btn-group w-100 shadow-sm rounded-pill overflow-hidden p-1 bg-white"
@@ -237,6 +256,23 @@
                                                 </button>
                                             </form>
                                         }
+
+                                        
+                                        @if (cita.EstadoCita?.NombreEstado == "Cancelada")
+                                        {
+                                            <a asp-controller="Recepcion"
+                                               asp-action="ReprogramarCancelada"
+                                               asp-route-id="@cita.IdCita"
+                                               class="btn btn-sm rounded-pill px-3 fw-semibold text-white ms-1"
+                                               style="background: linear-gradient(90deg, #1166f5, #08b7d4);
+                                                border: none;">
+
+                                                <i class="fa-solid fa-calendar-days me-1"></i>
+                                                Reprogramar
+
+                                            </a>
+                                        }
+
                                     </td>
                                 </tr>
                             }
@@ -253,26 +289,6 @@
             }
 
         </div>
-    </div>
-
-    
-    <!-- ACCESO A PROFESIONALES Y HORARIOS -->
-    <div class="d-flex gap-2 flex-wrap mb-4">
-
-        <a asp-controller="Recepcion"
-           asp-action="Medicos"
-           class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <i class="fa-solid fa-user-doctor me-2"></i>
-            Profesionales
-        </a>
-
-        <a asp-controller="Recepcion"
-           asp-action="Horarios"
-           class="btn btn-info text-white rounded-pill px-4 shadow-sm">
-            <i class="fa-solid fa-calendar-days me-2"></i>
-            Horarios Médicos
-        </a>
-
     </div>
 
 </div>

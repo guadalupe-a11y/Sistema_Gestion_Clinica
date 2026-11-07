@@ -79,6 +79,7 @@ namespace Sistema_Gestión_Clinica.Controllers
         }
 
 
+
         // GET: Recepcion/Index?estado=Todas&fecha=2026-11-02
         public async Task<IActionResult> Index(string? estado, DateTime? fecha)
         {
@@ -395,5 +396,146 @@ namespace Sistema_Gestión_Clinica.Controllers
 
             return RedirectToAction(nameof(WalkIn));
         }
+
+
+        // GET: Recepcion/ReprogramarCancelada/5
+        [HttpGet]
+        [Authorize(Roles = "Recepcionista,Administrador")]
+        public async Task<IActionResult> ReprogramarCancelada(int id)
+        {
+            var cita = await _context.Cita
+                .Include(c => c.Paciente)
+                .Include(c => c.Medico)
+                .Include(c => c.EstadoCita)
+                .FirstOrDefaultAsync(c => c.IdCita == id);
+
+            if (cita == null)
+                return NotFound();
+
+            if (cita.EstadoCita?.NombreEstado != "Cancelada")
+            {
+                TempData["Mensaje"] =
+                    "Solo se pueden reprogramar citas canceladas.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(cita);
+        }
+
+        // POST: Recepcion/ReprogramarCancelada
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Recepcionista,Administrador")]
+        public async Task<IActionResult> ReprogramarCancelada(
+            int idCita,
+            DateTime fecha,
+            TimeSpan hora)
+        {
+            var cita = await _context.Cita
+                .Include(c => c.EstadoCita)
+                .FirstOrDefaultAsync(c => c.IdCita == idCita);
+
+            if (cita == null)
+                return NotFound();
+
+            if (cita.EstadoCita?.NombreEstado != "Cancelada")
+            {
+                TempData["Error"] =
+                    "La cita ya no está cancelada.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            DateTime nuevaFechaHora = fecha.Date.Add(hora);
+
+            // VALIDAR FECHA FUTURA
+            if (nuevaFechaHora <= DateTime.Now)
+            {
+                TempData["Error"] =
+                    "Seleccione una fecha y hora futura.";
+
+                return RedirectToAction(
+                    nameof(ReprogramarCancelada),
+                    new { id = idCita });
+            }
+
+            // OBTENER EL DÍA DE LA SEMANA
+            int diaSemana = fecha.DayOfWeek == DayOfWeek.Sunday
+                ? 7
+                : (int)fecha.DayOfWeek;
+
+            // VALIDAR HORARIO DEL MÉDICO
+            bool horarioValido = await _context.HorarioMedico
+                .AnyAsync(h =>
+                    h.IdMedico == cita.IdMedico &&
+                    h.DiaSemana == diaSemana &&
+                    hora >= h.HoraInicio &&
+                    hora < h.HoraFin);
+
+            if (!horarioValido)
+            {
+                TempData["Error"] =
+                    "El médico no atiende en la fecha y hora seleccionadas.";
+
+                return RedirectToAction(
+                    nameof(ReprogramarCancelada),
+                    new { id = idCita });
+            }
+
+            // VERIFICAR SI EL HORARIO ESTÁ OCUPADO
+            bool horarioOcupado = await _context.Cita
+                .Include(c => c.EstadoCita)
+                .AnyAsync(c =>
+                    c.IdMedico == cita.IdMedico &&
+                    c.IdCita != idCita &&
+                    c.FechaHora == nuevaFechaHora &&
+                    c.EstadoCita != null &&
+                    c.EstadoCita.NombreEstado != "Cancelada");
+
+            if (horarioOcupado)
+            {
+                TempData["Error"] =
+                    "El horario seleccionado ya está ocupado.";
+
+                return RedirectToAction(
+                    nameof(ReprogramarCancelada),
+                    new { id = idCita });
+            }
+
+            // BUSCAR ESTADO AGENDADA
+            var estadoAgendada = await _context.EstadoCita
+                .FirstOrDefaultAsync(e =>
+                    e.NombreEstado == "Agendada");
+
+            if (estadoAgendada == null)
+            {
+                TempData["Error"] =
+                    "No se encontró el estado Agendada.";
+
+                return RedirectToAction(
+                    nameof(ReprogramarCancelada),
+                    new { id = idCita });
+            }
+
+            // ACTUALIZAR LA CITA EXISTENTE
+            cita.FechaHora = nuevaFechaHora;
+            cita.IdEstadoCita = estadoAgendada.IdEstadoCita;
+            cita.HoraCheckIn = null;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] =
+                "La cita cancelada fue reprogramada correctamente.";
+
+            return RedirectToAction(
+                nameof(Index),
+                new
+                {
+                    fecha = nuevaFechaHora.ToString("yyyy-MM-dd"),
+                    estado = "Agendada"
+                });
+        }   
+
     }
 }
