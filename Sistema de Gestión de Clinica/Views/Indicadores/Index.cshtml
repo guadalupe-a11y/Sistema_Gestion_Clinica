@@ -5,50 +5,141 @@
     string fechaFiltro = Model.Fecha.ToString("yyyy-MM-dd");
 }
 
-<div class="container animate__animated animate__fadeIn">
+<style>
+    /* ENCABEZADO */
+    .indicadores-header {
+        background: linear-gradient(110deg, #1166f5, #08b7d4);
+        border-radius: 22px;
+        padding: 32px;
+        box-shadow: 0 10px 28px rgba(17, 102, 245, 0.15);
+    }
+
+    .indicadores-fecha {
+        background: white;
+        border: none;
+        border-radius: 50rem;
+        padding: 9px 16px;
+        color: #334155;
+        max-width: 190px;
+    }
+
+    .indicadores-actualizar {
+        background: white;
+        color: #1166f5 !important;
+        border: none;
+        border-radius: 50rem;
+        padding: 11px 22px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+        .indicadores-actualizar:hover {
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+
+    /* TARJETAS */
+    .indicador-card {
+        background: white;
+        border: 1px solid #eef1f6;
+        border-radius: 20px;
+        padding: 28px 20px;
+        text-align: center;
+        height: 100%;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .indicador-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+        }
+
+    .indicador-icono {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 28px;
+    }
+
+    .indicador-titulo {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        min-height: 38px;
+    }
+
+    .indicador-numero {
+        font-size: 54px;
+        font-weight: 800;
+        line-height: 1.15;
+        margin: 12px 0;
+    }
+
+    .indicador-enlace {
+        font-size: 14px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container py-4 animate__animated animate__fadeIn">
 
     <!-- ENCABEZADO -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-            <h2 class="fw-bold text-dark mb-1">
-                Panel de Indicadores de Recepción
-            </h2>
+    <div class="indicadores-header mb-4 text-white">
 
-            <p class="text-muted mb-0">
-                Consulta las estadísticas de pacientes y citas por fecha.
-            </p>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
 
-            <!-- CALENDARIO PARA SELECCIONAR FECHA -->
-            <form asp-controller="Indicadores"
-                  asp-action="Index"
-                  method="get"
-                  class="d-flex align-items-center gap-2 mt-3 flex-wrap">
+            <div>
+                <h2 class="fw-bold mb-2">
+                    <i class="fa-solid fa-chart-pie me-2"></i>
+                    Panel de Indicadores de Recepción
+                </h2>
 
-                <label for="fecha" class="text-muted mb-0">
-                    Consultar fecha:
-                </label>
+                <p class="mb-3 text-white">
+                    Consulta las estadísticas de pacientes y citas por fecha.
+                </p>
 
-                <input type="date"
-                       id="fecha"
-                       name="fecha"
-                       value="@fechaFiltro"
-                       class="form-control rounded-pill w-auto px-3"
-                       onchange="this.form.submit()" />
-            </form>
+                <!-- SELECTOR DE FECHA -->
+                <form asp-controller="Indicadores"
+                      asp-action="Index"
+                      method="get"
+                      class="d-flex align-items-center gap-2 flex-wrap">
+
+                    <label for="fecha" class="fw-semibold text-white">
+                        <i class="fa-solid fa-calendar-days me-2"></i>
+                        Consultar fecha:
+                    </label>
+
+                    <input type="date"
+                           id="fecha"
+                           name="fecha"
+                           value="@fechaFiltro"
+                           class="form-control indicadores-fecha"
+                           onchange="this.form.submit()" />
+
+                </form>
+            </div>
+
+            <!-- ACTUALIZAR -->
+            <a asp-controller="Indicadores"
+               asp-action="Index"
+               asp-route-fecha="@fechaFiltro"
+               class="btn indicadores-actualizar shadow-sm">
+                <i class="fa-solid fa-rotate me-2"></i>
+                Actualizar Indicadores
+            </a>
+
         </div>
-
-        <!-- ACTUALIZAR INDICADORES -->
-        <a asp-controller="Indicadores"
-           asp-action="Index"
-           asp-route-fecha="@fechaFiltro"
-           class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <i class="fa-solid fa-rotate me-1"></i>
-            Actualizar Indicadores
-        </a>
     </div>
 
-    <!-- PRIMERA FILA DE INDICADORES -->
-    <div class="row g-4 mb-4">
+    <!-- INDICADORES -->
+    <div class="row g-4">
 
         <!-- TOTAL DE CITAS -->
         <div class="col-md-4">
@@ -56,25 +147,28 @@
                asp-action="Index"
                asp-route-estado="Todas"
                asp-route-fecha="@fechaFiltro"
-               class="text-decoration-none">
+               class="text-decoration-none d-block h-100">
 
-                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100">
-                    <div class="text-primary mb-2">
-                        <i class="fa-solid fa-calendar-check fs-1"></i>
+                <div class="indicador-card">
+
+                    <div class="indicador-icono"
+                         style="background:#eaf2ff;color:#1166f5;">
+                        <i class="fa-solid fa-calendar-check"></i>
                     </div>
 
-                    <h6 class="text-muted fw-bold">
+                    <div class="indicador-titulo">
                         TOTAL CITAS DEL DÍA
-                    </h6>
+                    </div>
 
-                    <h1 class="fw-bold text-primary display-4 mb-0">
+                    <div class="indicador-numero" style="color:#1166f5;">
                         @Model.TotalCitas
-                    </h1>
+                    </div>
 
-                    <small class="text-primary mt-2 d-block">
+                    <div class="indicador-enlace" style="color:#1166f5;">
                         Ver todas
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </small>
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+
                 </div>
             </a>
         </div>
@@ -85,27 +179,28 @@
                asp-action="Index"
                asp-route-estado="Agendada"
                asp-route-fecha="@fechaFiltro"
-               class="text-decoration-none">
+               class="text-decoration-none d-block h-100">
 
-                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100"
-                     style="border-top: 4px solid #ffc107 !important;">
+                <div class="indicador-card">
 
-                    <div class="text-warning mb-2">
-                        <i class="fa-solid fa-hourglass-half fs-1"></i>
+                    <div class="indicador-icono"
+                         style="background:#fff7dd;color:#d99b00;">
+                        <i class="fa-solid fa-hourglass-half"></i>
                     </div>
 
-                    <h6 class="text-muted fw-bold">
+                    <div class="indicador-titulo">
                         CITAS PENDIENTES
-                    </h6>
+                    </div>
 
-                    <h1 class="fw-bold text-warning display-4 mb-0">
+                    <div class="indicador-numero" style="color:#d99b00;">
                         @Model.CitasPendientes
-                    </h1>
+                    </div>
 
-                    <small class="text-warning mt-2 d-block">
+                    <div class="indicador-enlace" style="color:#d99b00;">
                         Ver pendientes
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </small>
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+
                 </div>
             </a>
         </div>
@@ -116,34 +211,31 @@
                asp-action="Index"
                asp-route-estado="En Espera"
                asp-route-fecha="@fechaFiltro"
-               class="text-decoration-none">
+               class="text-decoration-none d-block h-100">
 
-                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100"
-                     style="border-top: 4px solid #0dcaf0 !important;">
+                <div class="indicador-card">
 
-                    <div class="text-info mb-2">
-                        <i class="fa-solid fa-user-clock fs-1"></i>
+                    <div class="indicador-icono"
+                         style="background:#e0faff;color:#00a6c7;">
+                        <i class="fa-solid fa-user-clock"></i>
                     </div>
 
-                    <h6 class="text-muted fw-bold">
+                    <div class="indicador-titulo">
                         PACIENTES EN ESPERA
-                    </h6>
+                    </div>
 
-                    <h1 class="fw-bold text-info display-4 mb-0">
+                    <div class="indicador-numero" style="color:#00a6c7;">
                         @Model.PacientesEnEspera
-                    </h1>
+                    </div>
 
-                    <small class="text-info mt-2 d-block">
+                    <div class="indicador-enlace" style="color:#00a6c7;">
                         Ver en sala
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </small>
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+
                 </div>
             </a>
         </div>
-    </div>
-
-    <!-- SEGUNDA FILA DE INDICADORES -->
-    <div class="row g-4">
 
         <!-- CITAS FINALIZADAS -->
         <div class="col-md-4">
@@ -151,27 +243,28 @@
                asp-action="Index"
                asp-route-estado="Finalizada"
                asp-route-fecha="@fechaFiltro"
-               class="text-decoration-none">
+               class="text-decoration-none d-block h-100">
 
-                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100"
-                     style="border-top: 4px solid #198754 !important;">
+                <div class="indicador-card">
 
-                    <div class="text-success mb-2">
-                        <i class="fa-solid fa-circle-check fs-1"></i>
+                    <div class="indicador-icono"
+                         style="background:#e1f7eb;color:#168653;">
+                        <i class="fa-solid fa-circle-check"></i>
                     </div>
 
-                    <h6 class="text-muted fw-bold">
+                    <div class="indicador-titulo">
                         CITAS FINALIZADAS
-                    </h6>
+                    </div>
 
-                    <h1 class="fw-bold text-success display-4 mb-0">
+                    <div class="indicador-numero" style="color:#168653;">
                         @Model.CitasFinalizadas
-                    </h1>
+                    </div>
 
-                    <small class="text-success mt-2 d-block">
+                    <div class="indicador-enlace" style="color:#168653;">
                         Ver finalizadas e historial
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </small>
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+
                 </div>
             </a>
         </div>
@@ -182,27 +275,28 @@
                asp-action="Index"
                asp-route-estado="Cancelada"
                asp-route-fecha="@fechaFiltro"
-               class="text-decoration-none">
+               class="text-decoration-none d-block h-100">
 
-                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100"
-                     style="border-top: 4px solid #dc3545 !important;">
+                <div class="indicador-card">
 
-                    <div class="text-danger mb-2">
-                        <i class="fa-solid fa-ban fs-1"></i>
+                    <div class="indicador-icono"
+                         style="background:#ffe7eb;color:#e2364b;">
+                        <i class="fa-solid fa-ban"></i>
                     </div>
 
-                    <h6 class="text-muted fw-bold">
+                    <div class="indicador-titulo">
                         CITAS CANCELADAS
-                    </h6>
+                    </div>
 
-                    <h1 class="fw-bold text-danger display-4 mb-0">
+                    <div class="indicador-numero" style="color:#e2364b;">
                         @Model.CitasCanceladas
-                    </h1>
+                    </div>
 
-                    <small class="text-danger mt-2 d-block">
+                    <div class="indicador-enlace" style="color:#e2364b;">
                         Ver cancelaciones
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </small>
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+
                 </div>
             </a>
         </div>
@@ -213,28 +307,31 @@
                asp-action="Index"
                asp-route-estado="No-Show"
                asp-route-fecha="@fechaFiltro"
-               class="text-decoration-none">
+               class="text-decoration-none d-block h-100">
 
-                <div class="card card-hover border-0 shadow-sm p-4 text-center h-100">
+                <div class="indicador-card">
 
-                    <div class="text-secondary mb-2">
-                        <i class="fa-solid fa-user-slash fs-1"></i>
+                    <div class="indicador-icono"
+                         style="background:#eef1f5;color:#64748b;">
+                        <i class="fa-solid fa-user-slash"></i>
                     </div>
 
-                    <h6 class="text-muted fw-bold">
+                    <div class="indicador-titulo">
                         PACIENTES NO PRESENTADOS
-                    </h6>
+                    </div>
 
-                    <h1 class="fw-bold text-secondary display-4 mb-0">
+                    <div class="indicador-numero" style="color:#64748b;">
                         @Model.PacientesNoPresentados
-                    </h1>
+                    </div>
 
-                    <small class="text-secondary mt-2 d-block">
+                    <div class="indicador-enlace" style="color:#64748b;">
                         Ver registros
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </small>
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+
                 </div>
             </a>
         </div>
+
     </div>
 </div>
