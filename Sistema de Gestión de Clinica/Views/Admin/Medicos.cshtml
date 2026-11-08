@@ -5,12 +5,29 @@
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-dark mb-0">🧑‍⚕️ Plantilla Médica</h2>
+        <h2 class="fw-bold text-dark mb-0">👨‍⚕️ Plantilla Médica</h2>
         <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalMedico">
             <i class="bi bi-plus-lg me-1"></i> Registrar Médico
         </button>
     </div>
 
+    <!-- Alertas de estado -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- TABLA DE MÉDICOS -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -24,15 +41,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.Medicos != null && Model.Medicos.Any())
+                    @if (Model != null && Model.Medicos != null && Model.Medicos.Any())
                     {
                         foreach (var m in Model.Medicos)
                         {
                             <tr>
                                 <td class="ps-4 fw-bold text-secondary">@m.IdMedico</td>
                                 <td>Dr/a. @m.Nombre @m.Apellido</td>
-                                <td>@(m.Especialidad?.NombreEspecialidad ?? "General")</td>
-                                <td>Consultorio @(m.Consultorio?.NumeroConsultorio ?? m.IdConsultorio.ToString())</td>
+                                <td>
+                                    <span class="badge bg-primary px-3 py-2 rounded-pill">
+                                        @(m.Especialidad?.NombreEspecialidad ?? "General")
+                                    </span>
+                                </td>
+                                <td>@(m.Consultorio != null ? $"Consultorio {m.Consultorio.NumeroConsultorio}" : "Sin asignar")</td>
                                 <td>@m.DuracionConsultaMinutos min</td>
                             </tr>
                         }
@@ -40,7 +61,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No hay médicos registrados actualmente.</td>
+                            <td colspan="5" class="text-center py-4 text-muted">No hay médicos registrados.</td>
                         </tr>
                     }
                 </tbody>
@@ -49,63 +70,62 @@
     </div>
 </div>
 
-<!-- Modal Registrar Médico -->
-<div class="modal fade" id="modalMedico" tabindex="-1" aria-hidden="true">
+<!-- MODAL REGISTRAR MÉDICO -->
+<div class="modal fade" id="modalMedico" tabindex="-1" aria-labelledby="modalMedicoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-success text-white rounded-top-4">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Médico</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title fw-bold" id="modalMedicoLabel">
+                    <i class="bi bi-person-plus-fill me-2"></i>Registrar Nuevo Médico
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="RegistrarMedico" method="post">
+
+            <form asp-controller="Admin" asp-action="RegistrarMedico" method="post">
                 @Html.AntiForgeryToken()
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 bg-white">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Nombre</label>
-                        <input type="text" name="nombre" class="form-control rounded-3" required />
+                        <label class="form-label fw-semibold text-dark">Nombre</label>
+                        <input type="text" name="nombre" class="form-control rounded-3" placeholder="Ej: Carlos" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Apellido</label>
-                        <input type="text" name="apellido" class="form-control rounded-3" required />
+                        <label class="form-label fw-semibold text-dark">Apellido</label>
+                        <input type="text" name="apellido" class="form-control rounded-3" placeholder="Ej: Gomez" required />
                     </div>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Especialidad</label>
-                            @if (Model.Especialidades.Any())
-                            {
-                                <select name="idEspecialidad" class="form-select rounded-3" asp-items="Model.Especialidades" required>
-                                    <option value="">-- Seleccionar --</option>
-                                </select>
-                            }
-                            else
-                            {
-                                <input type="number" name="idEspecialidad" class="form-control rounded-3" value="1" placeholder="ID Especialidad" required />
-                            }
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-dark">Especialidad</label>
+                            <select name="idEspecialidad" class="form-select rounded-3" asp-items="Model.Especialidades" required>
+                                <option value="">-- Seleccionar --</option>
+                            </select>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label fw-semibold">Consultorio</label>
-                            @if (Model.Consultorios.Any())
-                            {
-                                <select name="idConsultorio" class="form-select rounded-3" asp-items="Model.Consultorios" required>
-                                    <option value="">-- Seleccionar --</option>
-                                </select>
-                            }
-                            else
-                            {
-                                <input type="number" name="idConsultorio" class="form-control rounded-3" value="101" placeholder="ID Consultorio" required />
-                            }
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-dark">Consultorio</label>
+                            <select name="idConsultorio" class="form-select rounded-3" asp-items="Model.Consultorios" required>
+                                <option value="">-- Seleccionar --</option>
+                            </select>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Duración de Consulta (Minutos)</label>
-                        <input type="number" name="duracionConsulta" value="20" class="form-control rounded-3" required />
+                        <label class="form-label fw-semibold text-dark">Duración de Consulta (Minutos)</label>
+                        <input type="number" name="duracionConsulta" class="form-control rounded-3" value="20" min="5" max="120" required />
                     </div>
                 </div>
                 <div class="modal-footer bg-light rounded-bottom-4">
-                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-success rounded-pill px-4">Guardar Médico</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- SCRIPT DE AUTO-REUBICACIÓN DEL MODAL AL BODY -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var modalElement = document.getElementById('modalMedico');
+        if (modalElement) {
+            document.body.appendChild(modalElement);
+        }
+    });
+</script>

@@ -78,39 +78,62 @@ namespace Sistema_Gestión_Clinica.Controllers
             return View("~/Views/Admin/Horarios.cshtml", horarios);
         }
 
-
-
-        // GET: Recepcion/Index?estado=Todas&fecha=2026-11-02
-        public async Task<IActionResult> Index(string? estado, DateTime? fecha)
+        // GET: Recepcion/Index
+        [HttpGet]
+        public async Task<IActionResult> Index(string estado = "Todas", string fecha = null)
         {
-            // Por defecto se muestran las citas del día actual.
-            DateTime fechaSeleccionada = fecha?.Date ?? DateTime.Today;
-            DateTime fechaSiguiente = fechaSeleccionada.AddDays(1);
+            // 1. Determinar la fecha a consultar (Si viene nula, usar la fecha de hoy)
+            DateTime fechaConsulta;
+            if (!DateTime.TryParse(fecha, out fechaConsulta))
+            {
+                fechaConsulta = DateTime.Today;
+            }
+
+            ViewBag.FechaFiltro = fechaConsulta.ToString("yyyy-MM-dd");
+
+            // 2. Query base filtrada estrictamente por el día (inicio a fin de día)
+            DateTime inicioDia = fechaConsulta.Date;
+            DateTime finDia = inicioDia.AddDays(1);
 
             var query = _context.Cita
                 .Include(c => c.Paciente)
                 .Include(c => c.Medico)
                     .ThenInclude(m => m.Especialidad)
                 .Include(c => c.EstadoCita)
-                .Where(c =>
-                    c.FechaHora >= fechaSeleccionada &&
-                    c.FechaHora < fechaSiguiente);
+                .Where(c => c.FechaHora >= inicioDia && c.FechaHora < finDia)
+                .AsQueryable();
 
-            // Filtrar por estado cuando se seleccione uno.
+            // 3. Filtrar según la pestaña seleccionada (Aceptando variaciones de nombres)
             if (!string.IsNullOrEmpty(estado) && estado != "Todas")
             {
-                query = query.Where(c =>
-                    c.EstadoCita != null &&
-                    c.EstadoCita.NombreEstado == estado);
+                switch (estado)
+                {
+                    case "Agendada":
+                    case "Pendientes":
+                        query = query.Where(c => c.EstadoCita != null &&
+                            (c.EstadoCita.NombreEstado == "Agendada" || c.EstadoCita.NombreEstado == "Programada"));
+                        break;
+
+                    case "En Espera":
+                        query = query.Where(c => c.EstadoCita != null &&
+                            c.EstadoCita.NombreEstado == "En Espera");
+                        break;
+
+                    case "Finalizada":
+                    case "Finalizadas":
+                        query = query.Where(c => c.EstadoCita != null &&
+                            c.EstadoCita.NombreEstado == "Finalizada");
+                        break;
+
+                    case "Cancelada":
+                    case "Canceladas":
+                        query = query.Where(c => c.EstadoCita != null &&
+                            c.EstadoCita.NombreEstado == "Cancelada");
+                        break;
+                }
             }
 
-            var citas = await query
-                .OrderBy(c => c.FechaHora)
-                .ToListAsync();
-
-            ViewBag.EstadoFiltro = estado ?? "Todas";
-            ViewBag.FechaFiltro = fechaSeleccionada.ToString("yyyy-MM-dd");
-
+            var citas = await query.OrderBy(c => c.FechaHora).ToListAsync();
             return View(citas);
         }
 

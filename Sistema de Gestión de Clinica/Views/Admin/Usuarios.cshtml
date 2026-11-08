@@ -11,6 +11,23 @@
         </button>
     </div>
 
+    <!-- Alertas -->
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Tabla -->
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -36,7 +53,9 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-success px-3 py-2 rounded-pill">Activo</span>
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">
+                                        @(u.Activo ? "Activo" : "Inactivo")
+                                    </span>
                                 </td>
                             </tr>
                         }
@@ -53,37 +72,50 @@
     </div>
 </div>
 
-<!-- Modal Nuevo Usuario -->
-<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+<!-- MODAL INDEPENDIENTE -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header bg-primary text-white rounded-top-4">
-                <h5 class="modal-title fw-bold"><i class="bi bi-person-fill-add me-2"></i>Crear Nuevo Usuario</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title fw-bold" id="modalUsuarioLabel">
+                    <i class="bi bi-person-fill-add me-2"></i>Crear Nuevo Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form asp-action="CrearUsuario" method="post">
+
+            <form asp-controller="Admin" asp-action="CrearUsuario" method="post">
                 @Html.AntiForgeryToken()
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 bg-white">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Correo Electrónico</label>
+                        <label class="form-label fw-semibold text-dark">Correo Electrónico</label>
                         <input type="email" name="correo" class="form-control rounded-3" placeholder="correo@ejemplo.com" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Contraseña</label>
-                        <input type="password" name="contrasena" class="form-control rounded-3" required />
+                        <label class="form-label fw-semibold text-dark">Contraseña</label>
+                        <input type="password" name="contrasena" class="form-control rounded-3" placeholder="••••••••" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Rol de Usuario</label>
+                        <label class="form-label fw-semibold text-dark">Rol de Usuario</label>
                         <select name="idRol" class="form-select rounded-3" asp-items="ViewBag.Roles" required>
                             <option value="">-- Seleccionar Rol --</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer bg-light rounded-bottom-4">
-                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary rounded-pill px-4">Crear Usuario</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- SCRIPT DE AUTO-REUBICACIÓN DEL MODAL -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var modalElement = document.getElementById('modalUsuario');
+        if (modalElement) {
+            document.body.appendChild(modalElement);
+        }
+    });
+</script>
