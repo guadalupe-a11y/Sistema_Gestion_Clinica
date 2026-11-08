@@ -1,6 +1,71 @@
-﻿namespace Sistema_de_Gestión_de_Clinica.Views.Acoount
-{
-    public class Login
-    {
-    }
+﻿@model Sistema_Gestión_Clinica.Models.Expediente
+
+@{
+    ViewData["Title"] = "Expediente Médico";
+    var historial = ViewBag.HistorialAtenciones as List<Sistema_Gestión_Clinica.Models.RegistroAtencion>;
 }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Expediente Médico de @Model?.Paciente?.Nombre @Model?.Paciente?.Apellido</h2>
+        <a asp-controller="Recepcion" asp-action="Index" class="btn btn-secondary">
+            Volver a Recepción
+        </a>
+    </div>
+
+    <!-- Datos Generales del Paciente -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Datos del Paciente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4"><strong>DUI:</strong> @Model?.Paciente?.DUI</div>
+                <div class="col-md-4"><strong>Teléfono:</strong> @Model?.Paciente?.Telefono</div>
+                <div class="col-md-4">
+                    <strong>Fecha Apertura:</strong>
+                    @(Model?.FechaApertura != null ? Convert.ToDateTime(Model.FechaApertura).ToString("dd/MM/yyyy") : "Sin fecha")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Atenciones Consultorio -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="card-title mb-0">Historial de Consultas Médicas</h5>
+        </div>
+        <div class="card-body">
+            @if (historial != null && historial.Any())
+            {
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Médico</th>
+                            <th>Diagnóstico</th>
+                            <th>Indicaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var atencion in historial)
+                        {
+                            <tr>
+                                <td>
+                                    @(atencion.FechaAtencion != null ? Convert.ToDateTime(atencion.FechaAtencion).ToString("dd/MM/yyyy HH:mm") : "Sin fecha")
+                                </td>
+                                <td>Dr. @atencion.Cita?.Medico?.Usuario?.Correo</td>
+                                <td>@atencion.Diagnostico</td>
+                                <td>@atencion.Indicaciones</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No hay registros de atenciones médicas previas en el expediente.</p>
+            }
+        </div>
+    </div>
+</div>

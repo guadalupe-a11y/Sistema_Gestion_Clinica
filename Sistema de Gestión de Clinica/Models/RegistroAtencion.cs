@@ -26,6 +26,7 @@ namespace Sistema_Gestión_Clinica.Models
         [ForeignKey("IdCita")]
         public virtual Cita? Cita { get; set; }
         public int IdExpediente { get; internal set; }
+        public DateTime FechaAtencion { get; internal set; }
     }
 }
 

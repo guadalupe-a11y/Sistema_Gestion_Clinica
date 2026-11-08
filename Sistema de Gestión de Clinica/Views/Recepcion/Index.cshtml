@@ -53,7 +53,6 @@
             </form>
         </div>
 
-        
         <div class="d-flex flex-wrap gap-2 justify-content-end">
 
             <!-- BOTÓN REGISTRAR PACIENTE SIN CITA -->
@@ -64,21 +63,17 @@
                 Registrar paciente sin cita
             </a>
 
-            
             <!-- BOTÓN VOLVER A INDICADORES -->
             <a asp-controller="Indicadores"
                asp-action="Index"
                asp-route-fecha="@fechaFiltro"
                class="btn rounded-pill px-4 fw-semibold text-white shadow-sm"
-               style="background: linear-gradient(90deg, #1166f5, #08b7d4);
-                border: none;">
+               style="background: linear-gradient(90deg, #1166f5, #08b7d4); border: none;">
                 <i class="fa-solid fa-chart-pie me-2"></i>
                 Volver a Indicadores
             </a>
 
-
         </div>
-
     </div>
 
     <!-- ACCESO A PROFESIONALES Y HORARIOS -->
@@ -178,13 +173,13 @@
                                             @cita.Paciente?.Apellido
                                         </div>
                                         <small class="text-muted">
-                                            DUI: @cita.Paciente?.DUI
+                                            @cita.Paciente?.DUI
                                         </small>
                                     </td>
 
                                     <td>
                                         <div class="fw-bold">
-                                            Dr. @cita.Medico?.Nombre
+                                            @cita.Medico?.Nombre
                                             @cita.Medico?.Apellido
                                         </div>
                                         <small class="text-muted">
@@ -230,13 +225,20 @@
                                     </td>
 
                                     <td class="text-center">
-                                        <a asp-controller="Recepcion"
-                                           asp-action="VerExpediente"
-                                           asp-route-idPaciente="@cita.IdPaciente"
-                                           class="btn btn-sm btn-outline-info rounded-pill px-3 me-1">
-                                            <i class="fa-solid fa-folder-open me-1"></i>
-                                            Expediente
-                                        </a>
+                                        <!-- BOTÓN EXPEDIENTE: Dirige a ExpedienteController / Ver -->
+                                        <!-- CÓDIGO CORREGIDO -->
+                                        <td class="text-center">
+                                            <!-- Este botón ahora funciona para CUALQUIER fecha y CUALQUIER estado -->
+                                            <a asp-controller="Expediente"
+                                               asp-action="Ver"
+                                               asp-route-idPaciente="@cita.IdPaciente"
+                                               class="btn btn-sm btn-outline-info rounded-pill px-3 me-1">
+                                                <i class="fa-solid fa-folder-open me-1"></i>
+                                                Expediente
+                                            </a>
+
+                                            @* Los demás botones condicionales como Check-In o Reprogramar van abajo *@
+                                        </td>
 
                                         @if (cita.EstadoCita?.NombreEstado == "Agendada"
                                              && cita.FechaHora.Date == DateTime.Today)
@@ -257,22 +259,17 @@
                                             </form>
                                         }
 
-                                        
                                         @if (cita.EstadoCita?.NombreEstado == "Cancelada")
                                         {
                                             <a asp-controller="Recepcion"
                                                asp-action="ReprogramarCancelada"
                                                asp-route-id="@cita.IdCita"
                                                class="btn btn-sm rounded-pill px-3 fw-semibold text-white ms-1"
-                                               style="background: linear-gradient(90deg, #1166f5, #08b7d4);
-                                                border: none;">
-
+                                               style="background: linear-gradient(90deg, #1166f5, #08b7d4); border: none;">
                                                 <i class="fa-solid fa-calendar-days me-1"></i>
                                                 Reprogramar
-
                                             </a>
                                         }
-
                                     </td>
                                 </tr>
                             }

@@ -18,3 +18,4 @@ namespace Sistema_Gestión_Clinica.Models
         public virtual Paciente? Paciente { get; set; }
     }
 }
+

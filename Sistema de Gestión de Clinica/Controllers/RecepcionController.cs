@@ -125,7 +125,8 @@ namespace Sistema_Gestión_Clinica.Controllers
             if (expediente == null)
             {
                 TempData["Mensaje"] = "El paciente aún no cuenta con un expediente abierto.";
-                return RedirectToAction(nameof(Index));
+                // Redirige directamente al ExpedienteController con el Id del paciente
+                return RedirectToAction("Ver", "Expediente", new { idPaciente });
             }
 
             //// Cargar el historial de atenciones / consultas de forma segura
