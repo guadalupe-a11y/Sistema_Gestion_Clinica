@@ -37,29 +37,32 @@ namespace Sistema_Gestión_Clinica.Controllers
                 .Include(c => c.EstadoCita)
                 .AsQueryable();
 
-            // Si existe el Claim del médico logueado, se filtran las citas por él
+            // Si es un médico logueado, filtramos por su ID
             if (idMedico.HasValue)
             {
                 query = query.Where(c => c.IdMedico == idMedico.Value);
             }
 
-            // Cargar las citas agendadas para el día de hoy
-            var citasHoy = await query
+            // 1. Obtener las citas programadas para hoy
+            var citas = await query
                 .Where(c => c.FechaHora.Date == DateTime.Today)
                 .OrderBy(c => c.FechaHora)
                 .ToListAsync();
 
-            // Si para hoy no hay citas registradas, se obtienen las últimas 10 registradas para demostración
-            if (!citasHoy.Any())
+            // 2. Si hay menos de 5 citas hoy, traer las citas más recientes para visualización
+            if (citas.Count < 5)
             {
-                citasHoy = await query
+                citas = await query
                     .OrderByDescending(c => c.FechaHora)
-                    .Take(10)
+                    .Take(15)
                     .ToListAsync();
+
+                // Reordenar por hora ascendente para mantener orden cronológico en la vista
+                citas = citas.OrderBy(c => c.FechaHora).ToList();
             }
 
             ViewBag.IdMedico = idMedico ?? 0;
-            return View(citasHoy);
+            return View(citas);
         }
 
         // POST: Medico/LlamarSiguiente

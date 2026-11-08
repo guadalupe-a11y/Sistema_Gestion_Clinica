@@ -22,46 +22,46 @@
     </div>
 
     <!-- Métricas Principales (KPIs) -->
-    <div class="row">
+    <div class="row mb-4">
         <!-- 1. PERSONAL MÉDICO -->
         <div class="col-md-3 mb-3">
-            <a href="@Url.Action("Index", "Medico")" class="text-decoration-none d-block text-white">
-                <div class="card bg-primary text-white p-3 h-100 style-card">
-                    <h5>PERSONAL MÉDICO</h5>
-                    <h2>17</h2>
-                    <small>Médicos activos registradas</small>
+            <a asp-controller="Admin" asp-action="Medicos" class="text-decoration-none d-block text-white">
+                <div class="card bg-primary text-white p-3 h-100 style-card card-hover border-0 shadow-sm rounded-4">
+                    <small class="text-white-50 fw-bold text-uppercase">PERSONAL MÉDICO</small>
+                    <h2 class="display-6 fw-bold my-2">@(ViewBag.TotalMedicos ?? 0)</h2>
+                    <small>Médicos activos registrados</small>
                 </div>
             </a>
         </div>
 
         <!-- 2. PACIENTES ACTIVOS -->
         <div class="col-md-3 mb-3">
-            <a href="@Url.Action("Index", "Paciente")" class="text-decoration-none d-block text-white">
-                <div class="card bg-success text-white p-3 h-100 style-card">
-                    <h5>PACIENTES ACTIVOS</h5>
-                    <h2>4</h2>
+            <a asp-controller="Recepcion" asp-action="Index" class="text-decoration-none d-block text-white">
+                <div class="card bg-success text-white p-3 h-100 style-card card-hover border-0 shadow-sm rounded-4">
+                    <small class="text-white-50 fw-bold text-uppercase">PACIENTES ACTIVOS</small>
+                    <h2 class="display-6 fw-bold my-2">@(ViewBag.TotalPacientes ?? 0)</h2>
                     <small>Expedientes clínicos vigentes</small>
                 </div>
             </a>
         </div>
 
-        <!-- 3. CITAS PROGRAMADAS HOY -->
+        <!-- 3. CITAS PROGRAMADAS HOY (CORREGIDO DE 'Atencion' A 'Medico') -->
         <div class="col-md-3 mb-3">
-            <a href="@Url.Action("Index", "Atencion")" class="text-decoration-none d-block text-white">
-                <div class="card bg-info text-white p-3 h-100 style-card">
-                    <h5>CITAS PROGRAMADAS HOY</h5>
-                    <h2>1</h2>
-                    <small>Agenda del día actual</small>
+            <a asp-controller="Medico" asp-action="Index" class="text-decoration-none d-block text-white">
+                <div class="card bg-info text-white p-3 h-100 style-card card-hover border-0 shadow-sm rounded-4">
+                    <small class="text-white-50 fw-bold text-uppercase">CITAS PROGRAMADAS HOY</small>
+                    <h2 class="display-6 fw-bold my-2">@(ViewBag.CitasHoy ?? 0)</h2>
+                    <small>Agenda del día actual (Ver panel)</small>
                 </div>
             </a>
         </div>
 
         <!-- 4. EN LISTA DE ESPERA -->
         <div class="col-md-3 mb-3">
-            <a href="@Url.Action("Index", "Monitor")" class="text-decoration-none d-block text-white">
-                <div class="card bg-warning text-white p-3 h-100 style-card">
-                    <h5>EN LISTA DE ESPERA</h5>
-                    <h2>5</h2>
+            <a asp-controller="Monitor" asp-action="Index" class="text-decoration-none d-block text-white">
+                <div class="card bg-warning text-dark p-3 h-100 style-card card-hover border-0 shadow-sm rounded-4">
+                    <small class="text-dark-50 fw-bold text-uppercase">EN LISTA DE ESPERA</small>
+                    <h2 class="display-6 fw-bold my-2">@(ViewBag.EnListaEspera ?? 0)</h2>
                     <small>Pendientes de reasignación</small>
                 </div>
             </a>
@@ -121,23 +121,13 @@
     </div>
 </div>
 
-<!-- Estilos para animación de elevación al pasar el cursor -->
 <style>
     .card-hover {
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
-    }
-    .card-link {
-        display: block;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
 
-        .card-link:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
         }
 </style>

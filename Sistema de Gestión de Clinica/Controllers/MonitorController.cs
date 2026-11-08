@@ -26,33 +26,26 @@ namespace Sistema_Gestión_Clinica.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerTurnos()
         {
-            DateTime hoy = DateTime.Today;
-            DateTime manana = hoy.AddDays(1);
-
+            // Obtener citas activas en estado Agendada, En Espera o En Consulta
             var turnos = await _context.Cita
                 .AsNoTracking()
-                .Where(c =>
-                    c.FechaHora >= hoy &&
-                    c.FechaHora < manana &&
-                    c.EstadoCita != null &&
-                    (
-                        c.EstadoCita.NombreEstado == "Agendada" ||
-                        c.EstadoCita.NombreEstado == "En Espera" ||
-                        c.EstadoCita.NombreEstado == "En Consulta"
-                    ))
+                .Include(c => c.Medico)
+                    .ThenInclude(m => m.Consultorio)
+                .Include(c => c.EstadoCita)
+                .Where(c => c.EstadoCita != null &&
+                    (c.EstadoCita.NombreEstado == "Agendada" ||
+                     c.EstadoCita.NombreEstado == "En Espera" ||
+                     c.EstadoCita.NombreEstado == "En Consulta"))
                 .OrderBy(c => c.FechaHora)
+                .Take(10)
                 .Select(c => new
                 {
-                    codigoTurno = c.CodigoTurno,
-
-                    consultorio = c.Medico != null &&
-                                  c.Medico.Consultorio != null
-                        ? c.Medico.Consultorio.NombreConsultorio
+                    codigoTurno = c.CodigoTurno ?? $"T-{c.IdCita}",
+                    consultorio = c.Medico != null && c.Medico.Consultorio != null
+                        ? $"Consultorio {c.Medico.Consultorio.NumeroConsultorio}"
                         : "Sin consultorio",
-
                     hora = c.FechaHora.ToString("HH:mm"),
-
-                    estado = c.EstadoCita!.NombreEstado
+                    estado = c.EstadoCita.NombreEstado
                 })
                 .ToListAsync();
 
