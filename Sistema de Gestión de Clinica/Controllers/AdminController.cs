@@ -190,5 +190,27 @@ namespace Sistema_Gestión_Clinica.Controllers
             TempData["Exito"] = "Usuario creado exitosamente.";
             return RedirectToAction(nameof(Usuarios));
         }
+
+        // POST: Admin/CambiarEstadoUsuario
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoUsuario(int id)
+        {
+            var usuario = await _context.Usuario.FindAsync(id);
+            if (usuario == null)
+            {
+                TempData["Error"] = "Usuario no encontrado.";
+                return RedirectToAction(nameof(Usuarios));
+            }
+
+            usuario.Activo = !usuario.Activo;
+            _context.Usuario.Update(usuario);
+            await _context.SaveChangesAsync();
+
+            string estadoTexto = usuario.Activo ? "activado" : "desactivado";
+            TempData["Exito"] = $"El usuario {usuario.Correo} ha sido {estadoTexto} correctamente.";
+
+            return RedirectToAction(nameof(Usuarios));
+        }
     }
 }

@@ -37,6 +37,7 @@
                         <th>Correo Electrónico</th>
                         <th>Rol</th>
                         <th>Estado</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,9 +54,31 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-success px-3 py-2 rounded-pill">
-                                        @(u.Activo ? "Activo" : "Inactivo")
-                                    </span>
+                                    @if (u.Activo)
+                                    {
+                                        <span class="badge bg-success px-3 py-2 rounded-pill">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary px-3 py-2 rounded-pill">Inactivo</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <form asp-controller="Admin" asp-action="CambiarEstadoUsuario" asp-route-id="@u.IdUsuario" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        @if (u.Activo)
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('¿Desea desactivar este usuario?');">
+                                                <i class="bi bi-person-x-fill me-1"></i> Desactivar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                                <i class="bi bi-person-check-fill me-1"></i> Activar
+                                            </button>
+                                        }
+                                    </form>
                                 </td>
                             </tr>
                         }
@@ -63,7 +86,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
+                            <td colspan="5" class="text-center py-4 text-muted">No hay usuarios registrados.</td>
                         </tr>
                     }
                 </tbody>
