@@ -6,6 +6,8 @@ namespace Sistema_Gestión_Clinica.Models
     [Table("Expediente")]
     public class Expediente
     {
+        internal DateTime FechaCreacion;
+
         [Key]
         public int IdExpediente { get; set; }
         public int IdPaciente { get; set; }

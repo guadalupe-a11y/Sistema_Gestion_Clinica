@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Sistema_de_Gestión_de_Clinica.Models;
 using Sistema_Gestión_Clinica.Models;
 
@@ -25,7 +29,6 @@ namespace Sistema_Gestión_Clinica.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Desactiva el borrado en cascada en Cita para evitar ciclos en SQL Server
             modelBuilder.Entity<Cita>()
                 .HasOne(c => c.Paciente)
                 .WithMany()
@@ -37,6 +40,27 @@ namespace Sistema_Gestión_Clinica.Data
                 .WithMany()
                 .HasForeignKey(c => c.IdMedico)
                 .OnDelete(DeleteBehavior.NoAction);
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                foreach (var property in entry.Properties)
+                {
+                    if (property.CurrentValue == null) continue;
+
+                    // Manejo seguro de DateTime no nullable
+                    if (property.CurrentValue is DateTime dateTimeVal)
+                    {
+                        if (dateTimeVal < new DateTime(1753, 1, 1))
+                        {
+                            property.CurrentValue = DateTime.Now;
+                        }
+                    }
+                }
+            }
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

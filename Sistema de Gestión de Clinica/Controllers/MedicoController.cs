@@ -105,7 +105,7 @@ namespace Sistema_Gestión_Clinica.Controllers
             return View(cita);
         }
 
-        // POST: Medico/FinalizarConsulta (ACTUALIZADO CON LOS NUEVOS CAMPOS)
+        // POST: Medico/FinalizarConsulta
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FinalizarConsulta(
@@ -118,10 +118,39 @@ namespace Sistema_Gestión_Clinica.Controllers
             string estudiosSolicitados,
             DateTime? proximaCitaRecomendada)
         {
-            var cita = await _context.Cita.FindAsync(idCita);
+            var cita = await _context.Cita
+                .Include(c => c.Paciente)
+                .FirstOrDefaultAsync(c => c.IdCita == idCita);
+
             if (cita == null) return NotFound();
 
-            // 1. Cambiar el estado de la cita a "Finalizada"
+            // 1. Validar y corregir FechaHora de la Cita si está fuera de rango SQL (menor a 1753)
+            if (cita.FechaHora.Year < 1753)
+            {
+                cita.FechaHora = DateTime.Now;
+            }
+
+            // 2. Verificar o crear el expediente del paciente asegurando fecha válida
+            var expediente = await _context.Expediente
+                .FirstOrDefaultAsync(e => e.IdPaciente == cita.IdPaciente);
+
+            if (expediente == null)
+            {
+                expediente = new Expediente
+                {
+                    IdPaciente = cita.IdPaciente,
+                    FechaCreacion = DateTime.Now
+                };
+                _context.Expediente.Add(expediente);
+                await _context.SaveChangesAsync();
+            }
+            else if (expediente.FechaCreacion.Year < 1753)
+            {
+                expediente.FechaCreacion = DateTime.Now;
+                _context.Expediente.Update(expediente);
+            }
+
+            // 3. Cambiar estado de la cita a "Finalizada"
             var estadoFinalizada = await _context.EstadoCita
                 .FirstOrDefaultAsync(e => e.NombreEstado == "Finalizada");
 
@@ -130,40 +159,42 @@ namespace Sistema_Gestión_Clinica.Controllers
                 cita.IdEstadoCita = estadoFinalizada.IdEstadoCita;
             }
 
-
-            // 2. Buscar expediente del paciente para asociar la atención
-            var expediente = await _context.Expediente
-                .FirstOrDefaultAsync(e => e.IdPaciente == cita.IdPaciente);
-
-            // Verificar que el paciente tenga un expediente válido
-            if (expediente == null)
+            // 4. Sanitizar la fecha de próxima cita para evitar DateTime.MinValue (0001-01-01)
+            DateTime? fechaProximaSanitizada = null;
+            if (proximaCitaRecomendada.HasValue && proximaCitaRecomendada.Value.Year >= 1900)
             {
-                TempData["Error"] =
-                    "No se puede finalizar la consulta porque el paciente no tiene un expediente registrado.";
-
-                return RedirectToAction(nameof(Atender), new { idCita });
+                fechaProximaSanitizada = proximaCitaRecomendada.Value;
             }
 
-            // 3. Crear el registro de la consulta médica
+            // 5. Crear el registro de la consulta médica con fechas seguras
             var registro = new RegistroAtencion
             {
                 IdCita = idCita,
                 IdExpediente = expediente.IdExpediente,
-                NotasConsulta = notas,
-                Diagnostico = diagnostico,
+                IdMedico = cita.IdMedico,
+                NotasConsulta = string.IsNullOrWhiteSpace(notas) ? "Sin observaciones" : notas,
+                Diagnostico = string.IsNullOrWhiteSpace(diagnostico) ? "Sin diagnóstico registrado" : diagnostico,
                 Indicaciones = indicaciones,
                 Sintomas = sintomas,
                 RecetaMedica = recetaMedica,
                 EstudiosSolicitados = estudiosSolicitados,
-                ProximaCitaRecomendada = proximaCitaRecomendada,
+                ProximaCitaRecomendada = fechaProximaSanitizada,
                 FechaRegistro = DateTime.Now
             };
 
             _context.RegistroAtencion.Add(registro);
-            await _context.SaveChangesAsync();
 
-            TempData["Mensaje"] = "Consulta finalizada exitosamente.";
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["Mensaje"] = "Consulta finalizada exitosamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error al guardar en base de datos: {ex.InnerException?.Message ?? ex.Message}";
+                return RedirectToAction(nameof(Atender), new { idCita });
+            }
         }
     }
 }

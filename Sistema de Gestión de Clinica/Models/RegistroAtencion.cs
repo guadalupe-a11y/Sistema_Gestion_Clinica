@@ -7,6 +7,8 @@ namespace Sistema_Gestión_Clinica.Models
     [Table("RegistroAtencion")]
     public class RegistroAtencion
     {
+        internal int IdMedico;
+
         [Key]
         public int IdRegistro { get; set; }
 
